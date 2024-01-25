@@ -24,6 +24,19 @@ private:
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
 	void LoadShaders(); 
 	void CreateGeometry();
+	void ImGuiUpdate(float deltaTime);
+	void BuildUI(float color[4]);
+
+	//make bgColor a global variable so it can be accessed by the UI
+	float bgColor[4] = { 0.4f, 0.6f, 0.75f, 1.0f };
+	int selectedColor = 0;
+	int previousColor = 0;
+	const char* colors[3] = { "Red", "Green", "Blue" };
+	//for showing and hiding the ImGui demo window
+	bool ImGuiDemoVisable = false;
+	//for UI name
+	char textInput[256] = "";
+	char nameUI[256] = "Peter";
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
