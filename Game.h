@@ -3,6 +3,8 @@
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
+#include <memory>
+#include "Mesh.h"
 
 class Game 
 	: public DXCore
@@ -37,6 +39,11 @@ private:
 	//for UI name
 	char textInput[256] = "";
 	char nameUI[256] = "Peter";
+
+	//meshes
+	std::shared_ptr<Mesh> triangle;
+	std::shared_ptr<Mesh> square;
+	std::shared_ptr<Mesh> star;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
