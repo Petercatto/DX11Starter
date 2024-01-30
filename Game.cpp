@@ -216,7 +216,7 @@ void Game::CreateGeometry()
 	int numTriIndices = sizeof(triIndices) / sizeof(triIndices[0]);
 
 	//create triangle mesh
-	triangle = std::make_shared<Mesh>(device.Get(), triVerts, numTriVerts, triIndices, numTriIndices);
+	triangle = std::make_shared<Mesh>(context, device, triVerts, numTriVerts, triIndices, numTriIndices);
 
 	//square
 	Vertex squareVerts[] =
@@ -232,7 +232,7 @@ void Game::CreateGeometry()
 	int numSquareVerts = sizeof(squareVerts) / sizeof(squareVerts[0]);
 	int numSquareIndices = sizeof(squareIndices) / sizeof(squareIndices[0]);
 
-	square = std::make_shared<Mesh>(device.Get(), squareVerts, numSquareVerts, squareIndices, numSquareIndices);
+	square = std::make_shared<Mesh>(context, device, squareVerts, numSquareVerts, squareIndices, numSquareIndices);
 
 	//star
 	Vertex starVerts[] =
@@ -255,7 +255,7 @@ void Game::CreateGeometry()
 	int numStarVerts = sizeof(starVerts) / sizeof(starVerts[0]);
 	int numStarIndices = sizeof(starIndices) / sizeof(starIndices[0]);
 
-	star = std::make_shared<Mesh>(device.Get(), starVerts, numStarVerts, starIndices, numStarIndices);
+	star = std::make_shared<Mesh>(context, device, starVerts, numStarVerts, starIndices, numStarIndices);
 }
 
 //ImGui update helper function
@@ -392,9 +392,9 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	triangle->Draw(context.Get());
-	square->Draw(context.Get());
-	star->Draw(context.Get());
+	triangle->Draw();
+	square->Draw();
+	star->Draw();
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen

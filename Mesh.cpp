@@ -15,7 +15,7 @@ int Mesh::GetIndexCount()
 	return indexCount;
 }
 
-void Mesh::Draw(ID3D11DeviceContext* context)
+void Mesh::Draw()
 {
 	//draw geometry
 	//steps are repeated for each object
@@ -37,10 +37,14 @@ void Mesh::Draw(ID3D11DeviceContext* context)
 }
 
 
-Mesh::Mesh(ID3D11Device* device, Vertex* vertices, int numVertices, int* indices, int numIndices)
+Mesh::Mesh(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c, Microsoft::WRL::ComPtr<ID3D11Device> d, Vertex* vertices, int numVertices, int* indices, int numIndices)
 {
 	//initialize indexCount
 	indexCount = numIndices;
+
+	//initialize device context
+	context = c;
+	device = d;
 
 	//create a vertex buffer
 	//holds the vertex data of triangles for a single object
