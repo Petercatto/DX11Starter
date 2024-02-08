@@ -93,6 +93,12 @@ void Game::Init()
 		context->PSSetShader(pixelShader.Get(), 0, 0);
 	}
 
+	//bind buffer to pipeline
+	context->VSSetConstantBuffers(
+		0,								//which slot to bind the buffer to
+		1,								//how many buffers being set
+		constBuffer.GetAddressOf());	//buffers in question
+
 	// Initialize ImGui itself & platform/renderer backends
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -142,6 +148,17 @@ void Game::LoadShaders()
 			0,										// No classes in this shader
 			vertexShader.GetAddressOf());			// The address of the ID3D11VertexShader pointer
 	}
+
+	//create constant buffer
+	unsigned int size = sizeof(VertexShaderData);	//get size from vertex shader data
+	size = (size + 15) / 16 * 16;					//calculate size in multiple of 16
+	D3D11_BUFFER_DESC cbDesc = {};					//sets struct to all zeros
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	//will be used by a constant buffer
+	cbDesc.ByteWidth = size;						//must be a multiple of 16
+	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;	//C++ will be writing but not reading data to this after creation
+	cbDesc.Usage = D3D11_USAGE_DYNAMIC;				//dynamic buffer allowing it to be changed
+
+	device->CreateBuffer(&cbDesc, 0, constBuffer.GetAddressOf());
 
 	// Create an input layout 
 	//  - This describes the layout of data sent to a vertex shader
@@ -279,7 +296,7 @@ void Game::ImGuiUpdate(float deltaTime)
 }
 
 //Builds UI utilizing ImGui
-void Game::BuildUI(float color[4])
+void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT3& offset)
 {
 	//beginning of window
 	ImGui::Begin((std::string(nameUI) + "'s Window").c_str());
@@ -290,10 +307,23 @@ void Game::BuildUI(float color[4])
 	//shows the current window size
 	ImGui::Text("Window Resolution: %dx%d", windowWidth, windowHeight);
 	
+	//text input example
+	ImGui::InputText("Enter Name", textInput, IM_ARRAYSIZE(textInput));
+
+	//copies the contents of text input into the name UI
+	if (ImGui::Button("Change Window Name"))
+	{
+		strncpy_s(nameUI, textInput, IM_ARRAYSIZE(nameUI));
+	}
+
 	//background color picker which takes in the bgcolor which is now a public variable
 	ImGui::ColorEdit4("Background Color", &color[0]);
 
-	//dropdown example
+	//vertex shader changers
+	ImGui::DragFloat3("Geometry Offset", &offset.x, 0.1f);
+	ImGui::ColorEdit4("Tint Color", &tint.x);
+
+	/*dropdown example
 	ImGui::Combo("Or Select Color", &selectedColor, colors, IM_ARRAYSIZE(colors));
 	if (selectedColor != previousColor)
 	{
@@ -316,7 +346,7 @@ void Game::BuildUI(float color[4])
 			bgColor[2] = 1.0f;
 		}
 		previousColor = selectedColor;
-	}
+	}*/
 
 	//demo window visibility button to show and hide the demo window
 	if (ImGui::Button("ImGui Demo Window"))
@@ -336,15 +366,6 @@ void Game::BuildUI(float color[4])
 		ImGui::BulletText("Square: %d triangle(s)", square->GetIndexCount() / 3);
 		ImGui::BulletText("Star: %d triangle(s)", star->GetIndexCount() / 3);
 		ImGui::TreePop();
-	}
-
-	//text input example
-	ImGui::InputText("Enter Name", textInput, IM_ARRAYSIZE(textInput));
-
-	//copies the contents of text input into the name UI
-	if (ImGui::Button("Change Window Name"))
-	{
-		strncpy_s(nameUI, textInput, IM_ARRAYSIZE(nameUI));
 	}
 
 	//ending of the window
@@ -369,7 +390,7 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	//update ImGui and UI
 	ImGuiUpdate(deltaTime);
-	BuildUI(bgColor);
+	BuildUI(bgColor, _colorTint, _offset);
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
@@ -391,6 +412,15 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Clear the depth buffer (resets per-pixel occlusion information)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
+
+	vsData.colorTint = _colorTint;
+	vsData.offset = _offset;
+
+	//copy the data to the constant buffer each frame
+	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+	context->Map(constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
+	memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
+	context->Unmap(constBuffer.Get(), 0);
 
 	triangle->Draw();
 	square->Draw();
