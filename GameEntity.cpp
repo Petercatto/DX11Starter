@@ -20,9 +20,6 @@ Transform& GameEntity::GetTransform()
 //method that draws entities
 void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Microsoft::WRL::ComPtr<ID3D11Buffer> cBuffer, DirectX::XMFLOAT4 tint)
 {
-	//set constant buffer for the vertex shader
-	context->VSSetConstantBuffers(0, 1, cBuffer.GetAddressOf());
-
 	//get the world matrix from the transform
 	DirectX::XMFLOAT4X4 worldMatrix = transform.GetWorldMatrix();
 

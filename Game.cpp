@@ -400,9 +400,27 @@ void Game::Update(float deltaTime, float totalTime)
 	ImGuiUpdate(deltaTime);
 	BuildUI(bgColor, _colorTint, _world);
 
-	vsData.world = entities[0]->GetTransform().GetWorldMatrix();
-	auto& firstEntityTransform = entities[0]->GetTransform();
-	firstEntityTransform.Rotate(0.0f, deltaTime, 0.0f);
+	//movement variables
+	float speed = 1.0f;
+	float magnitude = 1.0f;
+	float offset = sin(totalTime * speed) * magnitude;
+	float scaleOffset = sin(totalTime * speed) * magnitude + 1.0f;
+
+	//entity movement
+	auto& entity1 = entities[0]->GetTransform();
+	entity1.Rotate(0.0f, 0.0f, deltaTime);
+	auto& entity2 = entities[1]->GetTransform();
+	entity2.SetScale(scaleOffset, scaleOffset, 0.0f);
+	auto& entity3 = entities[2]->GetTransform();
+	entity3.SetPosition(offset, 0.0f, 0.0f);
+	auto& entity4 = entities[3]->GetTransform();
+	entity4.SetPosition(0.0f, offset, 0.0f);
+	auto& entity5 = entities[4]->GetTransform();
+	entity5.Rotate(0.0f, 0.0f, -deltaTime);
+	entity5.SetScale(scaleOffset/2, scaleOffset/2, 0.0f);
+	auto& entity6 = entities[5]->GetTransform();
+	entity6.MoveAbsolute(-0.0001f, 0.0f, 0.0f);
+	entity6.Scale(1.0001f, 1.0f, 1.0f);
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
@@ -439,24 +457,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	//square->Draw();
 	//star->Draw();
 
-	context->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
-
 	for (auto& entity : entities)
 	{
-		DirectX::XMFLOAT4X4 worldMatrix = entity->GetTransform().GetWorldMatrix();
-
-		//map the constant buffer resource
-		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-		context->Map(constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
-
-		//copy the data to the constant buffer
-		memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
-
-		//unmap the constant vuffer resource
-		context->Unmap(constBuffer.Get(), 0);
-
-		context->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
-
 		entity->Draw(context, constBuffer, DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 
