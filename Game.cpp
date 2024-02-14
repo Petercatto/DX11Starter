@@ -105,6 +105,14 @@ void Game::Init()
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 	ImGui::StyleColorsDark();
+
+	//[ujsh all the entities
+	entities.push_back(std::make_shared<GameEntity>(triangle));
+	entities.push_back(std::make_shared<GameEntity>(triangle));
+	entities.push_back(std::make_shared<GameEntity>(square));
+	entities.push_back(std::make_shared<GameEntity>(square));
+	entities.push_back(std::make_shared<GameEntity>(star));
+	entities.push_back(std::make_shared<GameEntity>(star));
 }
 
 // --------------------------------------------------------
@@ -296,7 +304,7 @@ void Game::ImGuiUpdate(float deltaTime)
 }
 
 //Builds UI utilizing ImGui
-void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT3& offset)
+void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4& world)
 {
 	//beginning of window
 	ImGui::Begin((std::string(nameUI) + "'s Window").c_str());
@@ -320,7 +328,7 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT3& o
 	ImGui::ColorEdit4("Background Color", &color[0]);
 
 	//vertex shader changers
-	ImGui::DragFloat3("Geometry Offset", &offset.x, 0.1f);
+	//ImGui::DragFloat3("Geometry Offset", &world.m, 0.1f);
 	ImGui::ColorEdit4("Tint Color", &tint.x);
 
 	/*dropdown example
@@ -390,7 +398,11 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	//update ImGui and UI
 	ImGuiUpdate(deltaTime);
-	BuildUI(bgColor, _colorTint, _offset);
+	BuildUI(bgColor, _colorTint, _world);
+
+	vsData.world = entities[0]->GetTransform().GetWorldMatrix();
+	auto& firstEntityTransform = entities[0]->GetTransform();
+	firstEntityTransform.Rotate(0.0f, deltaTime, 0.0f);
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
@@ -414,17 +426,39 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	vsData.colorTint = _colorTint;
-	vsData.offset = _offset;
+	_world = entities[0]->GetTransform().GetWorldMatrix();
+	vsData.world = _world;
 
 	//copy the data to the constant buffer each frame
-	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-	context->Map(constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
-	memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
-	context->Unmap(constBuffer.Get(), 0);
+	//D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+	//context->Map(constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
+	//memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
+	//context->Unmap(constBuffer.Get(), 0);
 
-	triangle->Draw();
-	square->Draw();
-	star->Draw();
+	//triangle->Draw();
+	//square->Draw();
+	//star->Draw();
+
+	context->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
+
+	for (auto& entity : entities)
+	{
+		DirectX::XMFLOAT4X4 worldMatrix = entity->GetTransform().GetWorldMatrix();
+
+		//map the constant buffer resource
+		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+		context->Map(constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
+
+		//copy the data to the constant buffer
+		memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
+
+		//unmap the constant vuffer resource
+		context->Unmap(constBuffer.Get(), 0);
+
+		context->VSSetConstantBuffers(0, 1, constBuffer.GetAddressOf());
+
+		entity->Draw(context, constBuffer, DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen

@@ -6,6 +6,8 @@
 #include <memory>
 #include "Mesh.h"
 #include "BufferStructs.h"
+#include "GameEntity.h"
+#include <vector>
 
 class Game 
 	: public DXCore
@@ -28,7 +30,7 @@ private:
 	void LoadShaders(); 
 	void CreateGeometry();
 	void ImGuiUpdate(float deltaTime);
-	void BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT3& offset);
+	void BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4& world);
 
 	//make bgColor a global variable so it can be accessed by the UI
 	float bgColor[4] = { 0.4f, 0.6f, 0.75f, 1.0f };
@@ -44,12 +46,15 @@ private:
 	//vertext shader data variables
 	VertexShaderData vsData;
 	DirectX::XMFLOAT4 _colorTint = DirectX::XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
-	DirectX::XMFLOAT3 _offset = DirectX::XMFLOAT3(0.25f, 0.0f, 0.0f);
+	DirectX::XMFLOAT4X4 _world;
 
 	//meshes
 	std::shared_ptr<Mesh> triangle;
 	std::shared_ptr<Mesh> square;
 	std::shared_ptr<Mesh> star;
+
+	//entity vector
+	std::vector<std::shared_ptr<GameEntity>> entities;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
