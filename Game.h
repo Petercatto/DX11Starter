@@ -34,9 +34,6 @@ private:
 
 	//make bgColor a global variable so it can be accessed by the UI
 	float bgColor[4] = { 0.4f, 0.6f, 0.75f, 1.0f };
-	//int selectedColor = 0;
-	//int previousColor = 0;
-	//const char* colors[3] = { "Red", "Green", "Blue" };
 	//for showing and hiding the ImGui demo window
 	bool ImGuiDemoVisable = false;
 	//for UI name
@@ -45,7 +42,7 @@ private:
 
 	//vertext shader data variables
 	VertexShaderData vsData;
-	DirectX::XMFLOAT4 _colorTint = DirectX::XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
+	DirectX::XMFLOAT4 _colorTint = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	DirectX::XMFLOAT4X4 _world;
 
 	//meshes

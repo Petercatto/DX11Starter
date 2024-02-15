@@ -38,6 +38,6 @@ void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Micro
 	//unmap the constant vuffer resource
 	context->Unmap(cBuffer.Get(), 0);
 
-	// Draw the mesh
+	//draw the mesh
 	mesh->Draw();
 }

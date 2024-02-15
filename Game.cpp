@@ -328,33 +328,7 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4&
 	ImGui::ColorEdit4("Background Color", &color[0]);
 
 	//vertex shader changers
-	//ImGui::DragFloat3("Geometry Offset", &world.m, 0.1f);
 	ImGui::ColorEdit4("Tint Color", &tint.x);
-
-	/*dropdown example
-	ImGui::Combo("Or Select Color", &selectedColor, colors, IM_ARRAYSIZE(colors));
-	if (selectedColor != previousColor)
-	{
-		if (selectedColor == 0)
-		{
-			bgColor[0] = 1.0f;
-			bgColor[1] = 0.0f;
-			bgColor[2] = 0.0f;
-		}
-		else if (selectedColor == 1)
-		{
-			bgColor[0] = 0.0f;
-			bgColor[1] = 1.0f;
-			bgColor[2] = 0.0f;
-		}
-		else
-		{
-			bgColor[0] = 0.0f;
-			bgColor[1] = 0.0f;
-			bgColor[2] = 1.0f;
-		}
-		previousColor = selectedColor;
-	}*/
 
 	//demo window visibility button to show and hide the demo window
 	if (ImGui::Button("ImGui Demo Window"))
@@ -369,10 +343,41 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4&
 	//check box example
 	ImGui::Checkbox("Show/Hide", &ImGuiDemoVisable);
 
-	if (ImGui::TreeNode("Meshes")) {
-		ImGui::BulletText("Triangle: %d triangle(s)", triangle->GetIndexCount() / 3);
-		ImGui::BulletText("Square: %d triangle(s)", square->GetIndexCount() / 3);
-		ImGui::BulletText("Star: %d triangle(s)", star->GetIndexCount() / 3);
+	//entity list
+	if (ImGui::TreeNode("Scene Entities"))
+	{
+		//for each entity
+		for (int i = 0; i < entities.size(); ++i)
+		{
+			//create a new list entry that shows the edits and values as well as the mesh index count
+			if (ImGui::TreeNode((std::string("Entity ") + std::to_string(i)).c_str()))
+			{
+				//get the transforms for the current entity
+				auto& transform = entities[i]->GetTransform();
+
+				//display and edit position
+				auto position = transform.GetPosition();
+				ImGui::DragFloat3("Position", &position.x, 0.1f);
+				transform.SetPosition(position);
+
+				//display and edit rotation
+				auto rotation = transform.GetPitchYawRoll();
+				ImGui::DragFloat3("Rotation (Radians)", &rotation.x, 0.1f);
+				transform.SetRotation(rotation);
+
+				//display and edit scale
+				auto scale = transform.GetScale();
+				ImGui::DragFloat3("Scale", &scale.x, 0.1f);
+				transform.SetScale(scale);
+
+				//mesh index count
+				ImGui::BulletText("Mesh Index Count: %d", entities[i]->GetMesh()->GetIndexCount());
+
+				//close the current entity
+				ImGui::TreePop();
+			}
+		}
+		//close the entire list
 		ImGui::TreePop();
 	}
 
@@ -403,8 +408,8 @@ void Game::Update(float deltaTime, float totalTime)
 	//movement variables
 	float speed = 1.0f;
 	float magnitude = 1.0f;
-	float offset = sin(totalTime * speed) * magnitude;
-	float scaleOffset = sin(totalTime * speed) * magnitude + 1.0f;
+	float offset = static_cast<float>(sin(totalTime * speed) * magnitude);
+	float scaleOffset = static_cast<float>(sin(totalTime * speed) * magnitude + 1.0);
 
 	//entity movement
 	auto& entity1 = entities[0]->GetTransform();
@@ -417,7 +422,7 @@ void Game::Update(float deltaTime, float totalTime)
 	entity4.SetPosition(0.0f, offset, 0.0f);
 	auto& entity5 = entities[4]->GetTransform();
 	entity5.Rotate(0.0f, 0.0f, -deltaTime);
-	entity5.SetScale(scaleOffset/2, scaleOffset/2, 0.0f);
+	entity5.SetScale(-scaleOffset/2, -scaleOffset/2, 0.0f);
 	auto& entity6 = entities[5]->GetTransform();
 	entity6.MoveAbsolute(-0.0001f, 0.0f, 0.0f);
 	entity6.Scale(1.0001f, 1.0f, 1.0f);
@@ -443,23 +448,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	vsData.colorTint = _colorTint;
-	_world = entities[0]->GetTransform().GetWorldMatrix();
-	vsData.world = _world;
-
-	//copy the data to the constant buffer each frame
-	//D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-	//context->Map(constBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
-	//memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
-	//context->Unmap(constBuffer.Get(), 0);
-
-	//triangle->Draw();
-	//square->Draw();
-	//star->Draw();
-
+	//draw all of the entities
 	for (auto& entity : entities)
 	{
-		entity->Draw(context, constBuffer, DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		entity->Draw(context, constBuffer, _colorTint);
 	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
