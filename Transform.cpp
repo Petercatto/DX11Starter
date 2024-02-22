@@ -103,6 +103,48 @@ DirectX::XMFLOAT4X4 Transform::GetWorldInverseTransposeMatrix()
 	return worldInverseTranspose;
 }
 
+DirectX::XMFLOAT3 Transform::GetRight()
+{
+	//make a right vector
+	XMVECTOR right = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+	//make a quaternion based off the euler rotation
+	XMVECTOR quat = XMQuaternionRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+	//rotate the vector via the quaternion
+	XMVECTOR rotatedRight = XMVector3Rotate(right, quat);
+	//store the right vec and cast it to a float 3 to be returned
+	XMFLOAT3 rightVec;
+	XMStoreFloat3(&rightVec, rotatedRight);
+	return rightVec;
+}
+
+DirectX::XMFLOAT3 Transform::GetUp()
+{
+	//make an up vector
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	//make a quaternion based off the euler rotation
+	XMVECTOR quat = XMQuaternionRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+	//rotate the vector via the quaternion
+	XMVECTOR rotatedUp = XMVector3Rotate(up, quat);
+	//store the up vec and cast it to a float 3 to be returned
+	XMFLOAT3 upVec;
+	XMStoreFloat3(&upVec, rotatedUp);
+	return upVec;
+}
+
+DirectX::XMFLOAT3 Transform::GetForward()
+{
+	//make a forward vector
+	XMVECTOR forward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	//make a quaternion based off the euler rotation
+	XMVECTOR quat = XMQuaternionRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+	//rotate the vector via the quaternion
+	XMVECTOR rotatedForward = XMVector3Rotate(forward, quat);
+	//store the forward vec and cast it to a float 3 to be returned
+	XMFLOAT3 forwardVec;
+	XMStoreFloat3(&forwardVec, rotatedForward);
+	return forwardVec;
+}
+
 //method to update the world matrix
 void Transform::updateWorldMatrix()
 {
@@ -173,6 +215,24 @@ void Transform::Scale(DirectX::XMFLOAT3 _scale)
 	scale.x *= _scale.x;
 	scale.y *= _scale.y;
 	scale.z *= _scale.z;
+
+	worldMatrixUpdated = true;
+}
+
+void Transform::MoveRelative(float x, float y, float z)
+{
+	//movement vector
+	XMVECTOR translate = XMVectorSet(x, y, z, 0.0f);
+	//quaternion representing transforms current rotation
+	XMVECTOR quat = XMQuaternionRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+	//rotated movement vector based off quaternion
+	XMVECTOR rotatedTranslate = XMVector3Rotate(translate, quat);
+	//load the existing position
+	XMVECTOR currentPosition = XMLoadFloat3(&position);
+	//add the rotated movement to the current position
+	XMVECTOR newPosition = XMVectorAdd(currentPosition, rotatedTranslate);
+	//store new position
+	XMStoreFloat3(&position, newPosition);
 
 	worldMatrixUpdated = true;
 }

@@ -18,7 +18,7 @@ Transform& GameEntity::GetTransform()
 }
 
 //method that draws entities
-void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Microsoft::WRL::ComPtr<ID3D11Buffer> cBuffer, DirectX::XMFLOAT4 tint)
+void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Microsoft::WRL::ComPtr<ID3D11Buffer> cBuffer, std::shared_ptr<Camera> camera, DirectX::XMFLOAT4 tint)
 {
 	//get the world matrix from the transform
 	DirectX::XMFLOAT4X4 worldMatrix = transform.GetWorldMatrix();
@@ -27,6 +27,8 @@ void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Micro
 	VertexShaderData vsData;
 	vsData.colorTint = tint;
 	vsData.world = worldMatrix;
+	vsData.view = camera->GetView();
+	vsData.projection = camera->GetProjection();
 
 	//map the constant buffer resource
 	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};

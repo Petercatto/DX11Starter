@@ -8,6 +8,7 @@
 #include "BufferStructs.h"
 #include "GameEntity.h"
 #include <vector>
+#include "Camera.h"
 
 class Game 
 	: public DXCore
@@ -53,6 +54,10 @@ private:
 	//entity vector
 	std::vector<std::shared_ptr<GameEntity>> entities;
 
+	//cameras
+	std::vector<std::shared_ptr<Camera>> cameras;
+	std::shared_ptr<Camera> activeCamera;
+
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
 	//     Component Object Model, which DirectX objects do
@@ -69,6 +74,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-
 };
 

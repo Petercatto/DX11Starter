@@ -106,13 +106,20 @@ void Game::Init()
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 	ImGui::StyleColorsDark();
 
-	//[ujsh all the entities
+	//push all the entities
 	entities.push_back(std::make_shared<GameEntity>(triangle));
 	entities.push_back(std::make_shared<GameEntity>(triangle));
 	entities.push_back(std::make_shared<GameEntity>(square));
 	entities.push_back(std::make_shared<GameEntity>(square));
 	entities.push_back(std::make_shared<GameEntity>(star));
 	entities.push_back(std::make_shared<GameEntity>(star));
+
+	//make camera
+	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 1, 1, XM_PI / 2,(float)this->windowWidth / this->windowHeight, true)); //normal camera
+	//cameras.push_back(std::make_shared<Camera>(0.0, 10.0, -1.0, 1, 1, 90.0, this->windowWidth, this->windowHeight, true)); //90 fov above
+	//cameras.push_back(std::make_shared<Camera>(10.0, -10.0, -1.0, 1, 1, 45.0, this->windowWidth, this->windowHeight, true)); //45 fov to the right and below
+	//cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 1, 1, 60.0, this->windowWidth, this->windowHeight, false)); //orthographic
+	activeCamera = cameras[0];
 }
 
 // --------------------------------------------------------
@@ -347,7 +354,7 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4&
 	if (ImGui::TreeNode("Scene Entities"))
 	{
 		//for each entity
-		for (int i = 0; i < entities.size(); ++i)
+		for (int i = 0; i < entities.size(); i++)
 		{
 			//create a new list entry that shows the edits and values as well as the mesh index count
 			if (ImGui::TreeNode((std::string("Entity ") + std::to_string(i)).c_str()))
@@ -394,6 +401,11 @@ void Game::OnResize()
 {
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
+	//update the cameras projection matrix with the new aspect ratio
+	for (int i = 0; i < cameras.size(); i++)
+	{
+		cameras[i]->UpdateProjectionMatrix((float)this->windowWidth / this->windowHeight);
+	}
 }
 
 // --------------------------------------------------------
@@ -427,6 +439,9 @@ void Game::Update(float deltaTime, float totalTime)
 	entity6.MoveAbsolute(-0.0001f, 0.0f, 0.0f);
 	entity6.Scale(1.0001f, 1.0f, 1.0f);
 
+	//camera update
+	activeCamera->Update(deltaTime);
+
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
 		Quit();
@@ -451,7 +466,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//draw all of the entities
 	for (auto& entity : entities)
 	{
-		entity->Draw(context, constBuffer, _colorTint);
+		entity->Draw(context, constBuffer, activeCamera, _colorTint);
 	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
