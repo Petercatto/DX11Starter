@@ -115,10 +115,12 @@ void Game::Init()
 	entities.push_back(std::make_shared<GameEntity>(star));
 
 	//make camera
-	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 1, 1, XM_PI / 2,(float)this->windowWidth / this->windowHeight, true)); //normal camera
-	//cameras.push_back(std::make_shared<Camera>(0.0, 10.0, -1.0, 1, 1, 90.0, this->windowWidth, this->windowHeight, true)); //90 fov above
-	//cameras.push_back(std::make_shared<Camera>(10.0, -10.0, -1.0, 1, 1, 45.0, this->windowWidth, this->windowHeight, true)); //45 fov to the right and below
-	//cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 1, 1, 60.0, this->windowWidth, this->windowHeight, false)); //orthographic
+	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 5, 0.1, XM_PI / 2, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(0.0, 1.0, -1.0, 5, 0.1, XM_PI / 3, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(1.0, -1.0, -1.0, 5, 0.1, XM_PI / 4, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 5, 0.1, XM_PI / 2, (float)this->windowWidth / this->windowHeight, false));
+
+	//set the current active camera
 	activeCamera = cameras[0];
 }
 
@@ -347,8 +349,36 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4&
 		ImGui::ShowDemoWindow();
 	}
 
+	ImGui::SameLine();
+
 	//check box example
 	ImGui::Checkbox("Show/Hide", &ImGuiDemoVisable);
+	
+	//camera changer
+	for (int i = 0; i < cameras.size(); i++)
+	{
+		if (ImGui::RadioButton(("Camera " + std::to_string(i + 1)).c_str(), &selectedCamera, i))
+		{
+			activeCamera = cameras[selectedCamera];
+		}
+		if (i != cameras.size() - 1)
+		{
+			ImGui::SameLine();
+		}
+	}
+
+	//info for the current camera
+	ImGui::Text("Active Camera:");
+	ImGui::Text("Position: %.2f, %.2f, %.2f", activeCamera->GetTransform().GetPosition().x, activeCamera->GetTransform().GetPosition().y, activeCamera->GetTransform().GetPosition().z);
+	ImGui::Text("Field of View: %.2f degrees", DirectX::XMConvertToDegrees(activeCamera->GetFOV()));
+	if (activeCamera->GetType())
+	{
+		ImGui::Text("Projection: Perspective");
+	}
+	else
+	{
+		ImGui::Text("Projection: Orthographic");
+	}
 
 	//entity list
 	if (ImGui::TreeNode("Scene Entities"))
@@ -401,6 +431,7 @@ void Game::OnResize()
 {
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
+
 	//update the cameras projection matrix with the new aspect ratio
 	for (int i = 0; i < cameras.size(); i++)
 	{

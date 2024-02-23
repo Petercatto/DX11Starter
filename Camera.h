@@ -7,14 +7,17 @@ class Camera
 {
 public:
 	//constructor
-	Camera(float _x, float _y, float _z, float mSpeed, float lSpeed, float fov, float aR, bool pO);
+	Camera(float _x, float _y, float _z, float mSpeed, float lSpeed, float fov, float aspectRatio, bool pO);
 
 	//getters
 	DirectX::XMFLOAT4X4 GetView();
 	DirectX::XMFLOAT4X4 GetProjection();
+	Transform GetTransform();
+	float GetFOV();
+	bool GetType();
 
 	//update methods
-	void UpdateProjectionMatrix(float aR);
+	void UpdateProjectionMatrix(float aspectRatio);
 	void UpdateViewMatrix();
 	void Update(float dt);
 private:
@@ -27,7 +30,6 @@ private:
 	//camera variables
 	float moveSpeed;
 	float lookSpeed;
-	float aspectRatio;
 	float FOV;
 	float nearPlane;
 	float farPlane;

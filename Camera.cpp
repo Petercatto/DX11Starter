@@ -3,7 +3,7 @@
 
 using namespace DirectX;
 
-Camera::Camera(float _x, float _y, float _z, float mSpeed, float lSpeed, float fov, float aR, bool pO) :
+Camera::Camera(float _x, float _y, float _z, float mSpeed, float lSpeed, float fov, float aspectRatio, bool pO) :
 	nearPlane(0.01),
 	farPlane(1000)
 {
@@ -19,7 +19,7 @@ Camera::Camera(float _x, float _y, float _z, float mSpeed, float lSpeed, float f
 
 	//update the matrices
 	UpdateViewMatrix();
-	UpdateProjectionMatrix(aR);
+	UpdateProjectionMatrix(aspectRatio);
 }
 
 //gets the view matrix
@@ -34,19 +34,37 @@ DirectX::XMFLOAT4X4 Camera::GetProjection()
 	return projMatrix;
 }
 
-//updates the projection matrix and stores it
-void Camera::UpdateProjectionMatrix(float aR)
+Transform Camera::GetTransform()
 {
-	//aspectRatio = (float)width / height;
+	return transform;
+}
 
+float Camera::GetFOV()
+{
+	return FOV;
+}
+
+bool Camera::GetType()
+{
+	return perspOrtho;
+}
+
+//updates the projection matrix and stores it
+void Camera::UpdateProjectionMatrix(float aspectRatio)
+{
+	//if it perpective store the perspective matrix
 	if (perspOrtho)
 	{
-		XMStoreFloat4x4(&projMatrix, XMMatrixPerspectiveFovLH(FOV, aR, nearPlane, farPlane));
+		XMStoreFloat4x4(&projMatrix, XMMatrixPerspectiveFovLH(FOV, aspectRatio, nearPlane, farPlane));
 	}
-	//else
-	//{
-		//XMStoreFloat4x4(&projMatrix, XMMatrixOrthographicLH(width, height, nearPlane, farPlane));
-	//}
+	//otherwise determine the halfwidth/height and store the orthographic matrix
+	else
+	{
+		float halfWidth = 10.0f;
+		float halfHeight = halfWidth / aspectRatio;
+
+		XMStoreFloat4x4(&projMatrix, XMMatrixOrthographicLH(halfWidth, halfHeight, nearPlane, farPlane));
+	}
 }
 
 //updates the view matrix and stores it
@@ -75,7 +93,7 @@ void Camera::Update(float dt)
 
 	//up and down absolute controls
 	if (input.KeyDown(' ')) { transform.MoveAbsolute(0.0, dt * moveSpeed, 0.0); }
-	if (input.KeyDown(VK_SHIFT)) { transform.MoveAbsolute(0.0, dt * -moveSpeed, 0.0); }
+	if (input.KeyDown(VK_LCONTROL)) { transform.MoveAbsolute(0.0, dt * -moveSpeed, 0.0); }
 
 	//mouse movement
 	if (input.MouseLeftDown())

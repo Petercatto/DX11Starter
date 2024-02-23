@@ -40,6 +40,8 @@ private:
 	//for UI name
 	char textInput[256] = "";
 	char nameUI[256] = "Peter";
+	//for cameras
+	int selectedCamera = 0;
 
 	//vertext shader data variables
 	VertexShaderData vsData;
