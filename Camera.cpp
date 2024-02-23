@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Input.h"
+#include <algorithm>
 
 using namespace DirectX;
 
@@ -98,20 +99,28 @@ void Camera::Update(float dt)
 	//mouse movement
 	if (input.MouseLeftDown())
 	{
-		int cursorMovementX = lookSpeed * input.GetMouseXDelta();
-		int cursorMovementY = lookSpeed * input.GetMouseYDelta();
+		float cursorMovementX = input.GetMouseXDelta();
+		float cursorMovementY = input.GetMouseYDelta();
 
-		//clamp the x movement so camera cant get inverted
-		if (cursorMovementX > XM_PI / 2)
-		{
-			cursorMovementX = XM_PI / 2;
-		}
-		else if (cursorMovementX < -XM_PI / 2)
-		{
-			cursorMovementX = -XM_PI / 2;
-		}
-		
+		cursorMovementX *= lookSpeed;
+		cursorMovementY *= lookSpeed;
+
+		//apply the rotation
 		transform.Rotate(cursorMovementY, cursorMovementX, 0);
+
+		//clamp the rotation to prevent flipping upside down
+		XMFLOAT3 currentRotation = transform.GetPitchYawRoll();
+		XMVECTOR rotationVector = XMLoadFloat3(&currentRotation);
+		//min and max
+		XMVECTOR minRotation = XMVectorSet(-XM_PIDIV2, -XM_PIDIV2, -XM_PIDIV2, -XM_PIDIV2);
+		XMVECTOR maxRotation = XMVectorSet(XM_PIDIV2, XM_PIDIV2, XM_PIDIV2, XM_PIDIV2);
+		//clamping the X only
+		XMVECTOR clampedRotation = XMVectorClamp(rotationVector, minRotation, maxRotation);
+		clampedRotation = DirectX::XMVectorSetY(clampedRotation, DirectX::XMVectorGetY(rotationVector));
+		
+		//store and set the rotation
+		XMStoreFloat3(&currentRotation, clampedRotation);
+		transform.SetRotation(currentRotation);
 	}
 
 	//update the view matrix

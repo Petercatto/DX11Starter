@@ -115,10 +115,10 @@ void Game::Init()
 	entities.push_back(std::make_shared<GameEntity>(star));
 
 	//make camera
-	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 5, 0.1, XM_PI / 2, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(0.0, 1.0, -1.0, 5, 0.1, XM_PI / 3, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(1.0, -1.0, -1.0, 5, 0.1, XM_PI / 4, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 5, 0.1, XM_PI / 2, (float)this->windowWidth / this->windowHeight, false));
+	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 5, 0.02, XM_PI / 3, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(0.0, 1.0, -1.0, 5, 0.02, XM_PI / 2, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(1.0, -1.0, -1.0, 5, 0.02, XM_PI / 4, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 5, 0.02, XM_PI / 3, (float)this->windowWidth / this->windowHeight, false));
 
 	//set the current active camera
 	activeCamera = cameras[0];
