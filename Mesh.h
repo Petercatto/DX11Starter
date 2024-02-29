@@ -18,6 +18,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 
+	//helper methods
+	void CreateBuffers(Vertex* vertices, int numVertices, UINT* indices, int numIndices);
 public:
 	//methods
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
@@ -26,7 +28,14 @@ public:
 	void Draw();
 
 	//constructor (takes in device context, device, vertices, vertex count, indices, & indice count)
-	Mesh(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c, Microsoft::WRL::ComPtr<ID3D11Device> d, Vertex* vertices, int numVertices, int* indices, int numIndices);
+	Mesh(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c, 
+		Microsoft::WRL::ComPtr<ID3D11Device> d, 
+		Vertex* vertices, int numVertices, 
+		UINT* indices, int numIndices);
+	//constructor for files
+	Mesh(const wchar_t* fileName, 
+		Microsoft::WRL::ComPtr<ID3D11DeviceContext> c,
+		Microsoft::WRL::ComPtr<ID3D11Device> d);
 	//destructor
 	~Mesh();
 };

@@ -5,10 +5,11 @@
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
 #include <memory>
 #include "Mesh.h"
-#include "BufferStructs.h"
 #include "GameEntity.h"
 #include <vector>
 #include "Camera.h"
+#include "SimpleShader.h"
+#include "Material.h"
 
 class Game 
 	: public DXCore
@@ -31,7 +32,7 @@ private:
 	void LoadShaders(); 
 	void CreateGeometry();
 	void ImGuiUpdate(float deltaTime);
-	void BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4& world);
+	void BuildUI(float color[4], DirectX::XMFLOAT4X4& world);
 
 	//make bgColor a global variable so it can be accessed by the UI
 	float bgColor[4] = { 0.4f, 0.6f, 0.75f, 1.0f };
@@ -43,15 +44,23 @@ private:
 	//for cameras
 	int selectedCamera = 0;
 
-	//vertext shader data variables
-	VertexShaderData vsData;
-	DirectX::XMFLOAT4 _colorTint = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	//vertex shader data variables
 	DirectX::XMFLOAT4X4 _world;
 
 	//meshes
 	std::shared_ptr<Mesh> triangle;
 	std::shared_ptr<Mesh> square;
 	std::shared_ptr<Mesh> star;
+	std::shared_ptr<Mesh> cube;
+	std::shared_ptr<Mesh> cylinder;
+	std::shared_ptr<Mesh> helix;
+	std::shared_ptr<Mesh> quad;
+	std::shared_ptr<Mesh> doubleSidedQuad;
+	std::shared_ptr<Mesh> torus;
+	std::shared_ptr<Mesh> sphere;
+
+	//materials
+	std::vector<std::shared_ptr<Material>> materials;
 
 	//entity vector
 	std::vector<std::shared_ptr<GameEntity>> entities;
@@ -68,13 +77,11 @@ private:
 	// Buffers to hold actual geometry data
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
-
-	//constant buffer for vertex shader data
-	Microsoft::WRL::ComPtr<ID3D11Buffer> constBuffer;
 	
 	// Shaders and shader-related constructs
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+	std::shared_ptr<SimplePixelShader> pixelShader;
+	std::shared_ptr<SimpleVertexShader> vertexShader;
+
+	std::shared_ptr<SimplePixelShader> customShader;
 };
 

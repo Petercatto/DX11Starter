@@ -70,34 +70,6 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateGeometry();
-	
-	// Set initial graphics API state
-	//  - These settings persist until we change them
-	//  - Some of these, like the primitive topology & input layout, probably won't change
-	//  - Others, like setting shaders, will need to be moved elsewhere later
-	{
-		// Tell the input assembler (IA) stage of the pipeline what kind of
-		// geometric primitives (points, lines or triangles) we want to draw.  
-		// Essentially: "What kind of shape should the GPU draw with our vertices?"
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		// Ensure the pipeline knows how to interpret all the numbers stored in
-		// the vertex buffer. For this course, all of your vertices will probably
-		// have the same layout, so we can just set this once at startup.
-		context->IASetInputLayout(inputLayout.Get());
-
-		// Set the active vertex and pixel shaders
-		//  - Once you start applying different shaders to different objects,
-		//    these calls will need to happen multiple times per frame
-		context->VSSetShader(vertexShader.Get(), 0, 0);
-		context->PSSetShader(pixelShader.Get(), 0, 0);
-	}
-
-	//bind buffer to pipeline
-	context->VSSetConstantBuffers(
-		0,								//which slot to bind the buffer to
-		1,								//how many buffers being set
-		constBuffer.GetAddressOf());	//buffers in question
 
 	// Initialize ImGui itself & platform/renderer backends
 	IMGUI_CHECKVERSION();
@@ -106,19 +78,43 @@ void Game::Init()
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 	ImGui::StyleColorsDark();
 
+	//make materials
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), pixelShader, vertexShader));
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), pixelShader, vertexShader));
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), pixelShader, vertexShader));
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), customShader, vertexShader));
+
 	//push all the entities
-	entities.push_back(std::make_shared<GameEntity>(triangle));
-	entities.push_back(std::make_shared<GameEntity>(triangle));
-	entities.push_back(std::make_shared<GameEntity>(square));
-	entities.push_back(std::make_shared<GameEntity>(square));
-	entities.push_back(std::make_shared<GameEntity>(star));
-	entities.push_back(std::make_shared<GameEntity>(star));
+	entities.push_back(std::make_shared<GameEntity>(triangle, materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(triangle, materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(square, materials[2]));
+	entities.push_back(std::make_shared<GameEntity>(square, materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(star, materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(star, materials[2]));
+	entities.push_back(std::make_shared<GameEntity>(cube, materials[3]));
+	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(helix, materials[3]));
+	entities.push_back(std::make_shared<GameEntity>(quad, materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(doubleSidedQuad, materials[3]));
+	entities.push_back(std::make_shared<GameEntity>(torus, materials[2]));
+	entities.push_back(std::make_shared<GameEntity>(sphere, materials[3]));
+
+	//entity initial transforms
+	entities[6]->GetTransform().SetPosition(-9.0f, 0.0f, 0.0f);
+	entities[7]->GetTransform().SetPosition(-6.0f, 0.0f, 0.0f);
+	entities[8]->GetTransform().SetPosition(-3.0f, 0.0f, 0.0f);
+	entities[9]->GetTransform().SetPosition(0.0f, 0.0f, 0.0f);
+	entities[9]->GetTransform().SetRotation(-XM_PI / 2, 0.0f, 0.0f);
+	entities[10]->GetTransform().SetPosition(3.0f, 0.0f, 0.0f);
+	entities[10]->GetTransform().SetRotation(-XM_PI / 2, 0.0f, 0.0f);
+	entities[11]->GetTransform().SetPosition(6.0f, 0.0f, 0.0f);
+	entities[12]->GetTransform().SetPosition(9.0f, 0.0f, 0.0f);
 
 	//make camera
-	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 5, 0.02, XM_PI / 3, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(0.0, 1.0, -1.0, 5, 0.02, XM_PI / 2, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(1.0, -1.0, -1.0, 5, 0.02, XM_PI / 4, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(0.0, 0.0, -1.0, 5, 0.02, XM_PI / 3, (float)this->windowWidth / this->windowHeight, false));
+	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(0.0f, 1.0f, -5.0f, 7.5f, 0.02f, XM_PI / 2.0f, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(1.0f, -1.0f, -5.0f, 7.5f, 0.02f, XM_PI / 4.0f, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, false));
 
 	//set the current active camera
 	activeCamera = cameras[0];
@@ -134,75 +130,13 @@ void Game::Init()
 // --------------------------------------------------------
 void Game::LoadShaders()
 {
-	// BLOBs (or Binary Large OBjects) for reading raw data from external files
-	// - This is a simplified way of handling big chunks of external data
-	// - Literally just a big array of bytes read from a file
-	ID3DBlob* pixelShaderBlob;
-	ID3DBlob* vertexShaderBlob;
+	vertexShader = std::make_shared<SimpleVertexShader>(device, context,
+		FixPath(L"VertexShader.cso").c_str());
+	pixelShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"PixelShader.cso").c_str());
 
-	// Loading shaders
-	//  - Visual Studio will compile our shaders at build time
-	//  - They are saved as .cso (Compiled Shader Object) files
-	//  - We need to load them when the application starts
-	{
-		// Read our compiled shader code files into blobs
-		// - Essentially just "open the file and plop its contents here"
-		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
-		// - Note the "L" before the string - this tells the compiler the string uses wide characters
-		D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
-		D3DReadFileToBlob(FixPath(L"VertexShader.cso").c_str(), &vertexShaderBlob);
-
-		// Create the actual Direct3D shaders on the GPU
-		device->CreatePixelShader(
-			pixelShaderBlob->GetBufferPointer(),	// Pointer to blob's contents
-			pixelShaderBlob->GetBufferSize(),		// How big is that data?
-			0,										// No classes in this shader
-			pixelShader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
-
-		device->CreateVertexShader(
-			vertexShaderBlob->GetBufferPointer(),	// Get a pointer to the blob's contents
-			vertexShaderBlob->GetBufferSize(),		// How big is that data?
-			0,										// No classes in this shader
-			vertexShader.GetAddressOf());			// The address of the ID3D11VertexShader pointer
-	}
-
-	//create constant buffer
-	unsigned int size = sizeof(VertexShaderData);	//get size from vertex shader data
-	size = (size + 15) / 16 * 16;					//calculate size in multiple of 16
-	D3D11_BUFFER_DESC cbDesc = {};					//sets struct to all zeros
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	//will be used by a constant buffer
-	cbDesc.ByteWidth = size;						//must be a multiple of 16
-	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;	//C++ will be writing but not reading data to this after creation
-	cbDesc.Usage = D3D11_USAGE_DYNAMIC;				//dynamic buffer allowing it to be changed
-
-	device->CreateBuffer(&cbDesc, 0, constBuffer.GetAddressOf());
-
-	// Create an input layout 
-	//  - This describes the layout of data sent to a vertex shader
-	//  - In other words, it describes how to interpret data (numbers) in a vertex buffer
-	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
-	//  - Luckily, we already have that loaded (the vertex shader blob above)
-	{
-		D3D11_INPUT_ELEMENT_DESC inputElements[2] = {};
-
-		// Set up the first element - a position, which is 3 float values
-		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
-		inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
-		inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
-
-		// Set up the second element - a color, which is 4 more float values
-		inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
-		inputElements[1].SemanticName = "COLOR";							// Match our vertex shader input!
-		inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// After the previous element
-
-		// Create the input layout, verifying our description against actual shader code
-		device->CreateInputLayout(
-			inputElements,							// An array of descriptions
-			2,										// How many elements in that array?
-			vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
-			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
-			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
-	}
+	customShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"CustomPS.cso").c_str());
 }
 
 
@@ -212,14 +146,6 @@ void Game::LoadShaders()
 // --------------------------------------------------------
 void Game::CreateGeometry()
 {
-	// Create some temporary variables to represent colors
-	// - Not necessary, just makes things more readable
-	XMFLOAT4 red	= XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green	= XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue	= XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-	XMFLOAT4 yellow = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 white = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-
 	// Set up the vertices of the triangle we would like to draw
 	// - We're going to copy this array, exactly as it exists in CPU memory
 	//    over to a Direct3D-controlled data structure on the GPU (the vertex buffer)
@@ -229,14 +155,14 @@ void Game::CreateGeometry()
 	// - This means (0,0) is at the very center of the screen.
 	// - These are known as "Normalized Device Coordinates" or "Homogeneous 
 	//    Screen Coords", which are ways to describe a position without
-	//    knowing the exact size (in pixels) of the image/window/etc.  
+	//    knowing the exact size (in pixels) of the image/window/etc.
 	// - Long story short: Resizing the window also resizes the triangle,
 	//    since we're describing the triangle in terms of the window itself
 	Vertex triVerts[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.5f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.5f, -0.5f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(-0.5f, -0.5f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
 	};
 
 	// Set up indices, which tell us which vertices to use and in which order
@@ -244,24 +170,23 @@ void Game::CreateGeometry()
 	// - Indices are technically not required if the vertices are in the buffer 
 	//    in the correct order and each one will be used exactly once
 	// - But just to see how it's done...
-	int triIndices[] = { 0, 1, 2 };
+	UINT triIndices[] = { 0, 1, 2 };
 
 	int numTriVerts = sizeof(triVerts) / sizeof(triVerts[0]);
 	int numTriIndices = sizeof(triIndices) / sizeof(triIndices[0]);
-
 	//create triangle mesh
 	triangle = std::make_shared<Mesh>(context, device, triVerts, numTriVerts, triIndices, numTriIndices);
 
 	//square
 	Vertex squareVerts[] =
 	{
-		{ XMFLOAT3(-0.8f, +0.8f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, +0.8f, +0.0f), red },
-		{ XMFLOAT3(-0.8f, +0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, +0.5f, +0.0f), red },
+		{ XMFLOAT3(-0.8f, +0.8f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(-0.5f, +0.8f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(-0.8f, +0.5f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(-0.5f, +0.5f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
 	};
 
-	int squareIndices[] = { 0, 1, 2, 2, 1, 3 };
+	UINT squareIndices[] = { 0, 1, 2, 2, 1, 3 };
 
 	int numSquareVerts = sizeof(squareVerts) / sizeof(squareVerts[0]);
 	int numSquareIndices = sizeof(squareIndices) / sizeof(squareIndices[0]);
@@ -271,25 +196,34 @@ void Game::CreateGeometry()
 	//star
 	Vertex starVerts[] =
 	{
-		{ XMFLOAT3(+0.7f, +0.6f, +0.0f), white },
-		{ XMFLOAT3(+0.7f, +0.45f, +0.0f), yellow },
-		{ XMFLOAT3(+0.55f, +0.3f, +0.0f), yellow },
-		{ XMFLOAT3(+0.6f, +0.55f, +0.0f), yellow },
-		{ XMFLOAT3(+0.5f, +0.7f, +0.0f), yellow },
-		{ XMFLOAT3(+0.65f, +0.7f, +0.0f), yellow },
-		{ XMFLOAT3(+0.7f, +0.95f, +0.0f), yellow },
-		{ XMFLOAT3(+0.75f, +0.7f, +0.0f), yellow },
-		{ XMFLOAT3(+0.9f, +0.7f, +0.0f), yellow },
-		{ XMFLOAT3(+0.8f, +0.55f, +0.0f), yellow },
-		{ XMFLOAT3(+0.85f, +0.3f, +0.0f), yellow },
+		{ XMFLOAT3(+0.7f, +0.6f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.7f, +0.45f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.55f, +0.3f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.6f, +0.55f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.5f, +0.7f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.65f, +0.7f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.7f, +0.95f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.75f, +0.7f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.9f, +0.7f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.8f, +0.55f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
+		{ XMFLOAT3(+0.85f, +0.3f, +5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0,0)},
 	};
 
-	int starIndices[] = { 1, 2, 0, 0, 2, 3, 3, 4, 0, 0, 4, 5, 5, 6, 0, 0, 6, 7, 7, 8, 0, 0, 8, 9, 9, 10, 0, 0, 10, 1 };
+	UINT starIndices[] = { 1, 2, 0, 0, 2, 3, 3, 4, 0, 0, 4, 5, 5, 6, 0, 0, 6, 7, 7, 8, 0, 0, 8, 9, 9, 10, 0, 0, 10, 1 };
 
 	int numStarVerts = sizeof(starVerts) / sizeof(starVerts[0]);
 	int numStarIndices = sizeof(starIndices) / sizeof(starIndices[0]);
 
 	star = std::make_shared<Mesh>(context, device, starVerts, numStarVerts, starIndices, numStarIndices);
+
+	//3D Models
+	cube = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cube.obj").c_str(), context, device);
+	cylinder = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/cylinder.obj").c_str(), context, device);
+	helix = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/helix.obj").c_str(), context, device);
+	quad = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/quad.obj").c_str(), context, device);
+	doubleSidedQuad = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/quad_double_sided.obj").c_str(), context, device);
+	torus = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/torus.obj").c_str(), context, device);
+	sphere = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/sphere.obj").c_str(), context, device);
 }
 
 //ImGui update helper function
@@ -313,7 +247,7 @@ void Game::ImGuiUpdate(float deltaTime)
 }
 
 //Builds UI utilizing ImGui
-void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4& world)
+void Game::BuildUI(float color[4], DirectX::XMFLOAT4X4& world)
 {
 	//beginning of window
 	ImGui::Begin((std::string(nameUI) + "'s Window").c_str());
@@ -335,9 +269,6 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4& tint, DirectX::XMFLOAT4X4&
 
 	//background color picker which takes in the bgcolor which is now a public variable
 	ImGui::ColorEdit4("Background Color", &color[0]);
-
-	//vertex shader changers
-	ImGui::ColorEdit4("Tint Color", &tint.x);
 
 	//demo window visibility button to show and hide the demo window
 	if (ImGui::Button("ImGui Demo Window"))
@@ -446,26 +377,26 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	//update ImGui and UI
 	ImGuiUpdate(deltaTime);
-	BuildUI(bgColor, _colorTint, _world);
+	BuildUI(bgColor, _world);
 
 	//movement variables
 	float speed = 1.0f;
 	float magnitude = 1.0f;
 	float offset = static_cast<float>(sin(totalTime * speed) * magnitude);
-	float scaleOffset = static_cast<float>(sin(totalTime * speed) * magnitude + 1.0);
+	float scaleOffset = static_cast<float>(sin(totalTime * speed) * magnitude + 1.0f);
 
 	//entity movement
 	auto& entity1 = entities[0]->GetTransform();
 	entity1.Rotate(0.0f, 0.0f, deltaTime);
 	auto& entity2 = entities[1]->GetTransform();
-	entity2.SetScale(scaleOffset, scaleOffset, 0.0f);
+	entity2.SetScale(scaleOffset, scaleOffset, 1.0f);
 	auto& entity3 = entities[2]->GetTransform();
 	entity3.SetPosition(offset, 0.0f, 0.0f);
 	auto& entity4 = entities[3]->GetTransform();
 	entity4.SetPosition(0.0f, offset, 0.0f);
 	auto& entity5 = entities[4]->GetTransform();
 	entity5.Rotate(0.0f, 0.0f, -deltaTime);
-	entity5.SetScale(-scaleOffset/2, -scaleOffset/2, 0.0f);
+	entity5.SetScale(-scaleOffset/2, -scaleOffset/2, 1.0f);
 	auto& entity6 = entities[5]->GetTransform();
 	entity6.MoveAbsolute(-0.0001f, 0.0f, 0.0f);
 	entity6.Scale(1.0001f, 1.0f, 1.0f);
@@ -497,7 +428,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//draw all of the entities
 	for (auto& entity : entities)
 	{
-		entity->Draw(context, constBuffer, activeCamera, _colorTint);
+		entity->Draw(context, activeCamera, totalTime);
 	}
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
