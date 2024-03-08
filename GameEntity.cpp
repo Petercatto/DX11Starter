@@ -45,10 +45,16 @@ void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::
 	vsData->SetMatrix4x4("view", camera->GetView());				// names in your
 	vsData->SetMatrix4x4("projection", camera->GetProjection());	// shader’s cbuffer!
 
+	//sets lighting values for roughness
+	psData->SetFloat("roughness", material->GetRoughness());
+	psData->SetFloat3("cameraPosition", camera->GetTransform().GetPosition());
+	vsData->SetMatrix4x4("worldInvTranspose", transform.GetWorldInverseTransposeMatrix());
+
 	//mapping constant buffer data
 	vsData->CopyAllBufferData();
 	psData->CopyAllBufferData();
 
+	//sets material shaders
 	material->GetVertexShader()->SetShader();
 	material->GetPixelShader()->SetShader();
 

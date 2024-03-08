@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "SimpleShader.h"
 #include "Material.h"
+#include "Lights.h"
 
 class Game 
 	: public DXCore
@@ -68,6 +69,10 @@ private:
 	//cameras
 	std::vector<std::shared_ptr<Camera>> cameras;
 	std::shared_ptr<Camera> activeCamera;
+
+	//lighting
+	DirectX::XMFLOAT3 ambientColor = { 0.1f, 0.15f, 0.1817f };
+	std::vector<Light> lights;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the

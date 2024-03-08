@@ -79,10 +79,13 @@ void Game::Init()
 	ImGui::StyleColorsDark();
 
 	//make materials
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), pixelShader, vertexShader));
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), pixelShader, vertexShader));
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), pixelShader, vertexShader));
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), customShader, vertexShader));
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), 0.0f, pixelShader, vertexShader));	//dull red
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f, pixelShader, vertexShader));	//somewhat shiny green
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, pixelShader, vertexShader));	//shiny blue
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, customShader, vertexShader));	//custom pixel shader
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, pixelShader, vertexShader));	//dull white
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.5f, pixelShader, vertexShader));	//somewhat shiny white
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, pixelShader, vertexShader));	//shiny white
 
 	//push all the entities
 	entities.push_back(std::make_shared<GameEntity>(triangle, materials[0]));
@@ -91,13 +94,14 @@ void Game::Init()
 	entities.push_back(std::make_shared<GameEntity>(square, materials[0]));
 	entities.push_back(std::make_shared<GameEntity>(star, materials[1]));
 	entities.push_back(std::make_shared<GameEntity>(star, materials[2]));
+	entities.push_back(std::make_shared<GameEntity>(cube, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(helix, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(quad, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(doubleSidedQuad, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(torus, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(sphere, materials[4]));
 	entities.push_back(std::make_shared<GameEntity>(cube, materials[3]));
-	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(helix, materials[3]));
-	entities.push_back(std::make_shared<GameEntity>(quad, materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(doubleSidedQuad, materials[3]));
-	entities.push_back(std::make_shared<GameEntity>(torus, materials[2]));
-	entities.push_back(std::make_shared<GameEntity>(sphere, materials[3]));
 
 	//entity initial transforms
 	entities[6]->GetTransform().SetPosition(-9.0f, 0.0f, 0.0f);
@@ -109,6 +113,7 @@ void Game::Init()
 	entities[10]->GetTransform().SetRotation(-XM_PI / 2, 0.0f, 0.0f);
 	entities[11]->GetTransform().SetPosition(6.0f, 0.0f, 0.0f);
 	entities[12]->GetTransform().SetPosition(9.0f, 0.0f, 0.0f);
+	entities[13]->GetTransform().SetPosition(0.0f, 0.0f, -20.0f);
 
 	//make camera
 	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, true));
@@ -118,6 +123,37 @@ void Game::Init()
 
 	//set the current active camera
 	activeCamera = cameras[0];
+
+	//lights
+	lights.push_back({});
+	lights.push_back({});
+	lights.push_back({});
+	lights.push_back({});
+	lights.push_back({});
+	lights[0].Type = LIGHT_TYPE_DIRECTIONAL;
+	lights[0].Direction = { 1.0f, 0.0f, 0.0f };
+	lights[0].Color = { 1.0f, 0.0f, 0.0f };
+	lights[0].Intensity = 1.0f;
+	lights[1].Type = LIGHT_TYPE_DIRECTIONAL;
+	lights[1].Direction = { 0.0f, -1.0f, 0.0f };
+	lights[1].Color = { 0.0f, 1.0f, 0.0f };
+	lights[1].Intensity = 1.0f;
+	lights[2].Type = LIGHT_TYPE_DIRECTIONAL;
+	lights[2].Direction = { -1.0f, 0.0f, 0.0f };
+	lights[2].Color = { 0.0f, 0.0f, 1.0f };
+	lights[2].Intensity = 1.0f;
+	lights[3].Type = LIGHT_TYPE_POINT;
+	lights[3].Position = { -5.0f, 0.0f, -5.0f };
+	lights[3].Range = 10.0f;
+	lights[3].Color = { 0.0f, 1.0f, 1.0f };
+	lights[3].Intensity = 1.0f;
+	lights[4].Type = LIGHT_TYPE_POINT;
+	lights[4].Position = { 5.0f, 0.0f, 5.0f };
+	lights[4].Range = 10.0f;
+	lights[4].Color = { 1.0f, 0.0f, 1.0f };
+	lights[4].Intensity = 1.0f;
+
+
 }
 
 // --------------------------------------------------------
@@ -269,6 +305,8 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4X4& world)
 
 	//background color picker which takes in the bgcolor which is now a public variable
 	ImGui::ColorEdit4("Background Color", &color[0]);
+	//update ambientcolor
+	ambientColor = { color[0] / 4,color[1] / 4,color[2] / 4 };
 
 	//demo window visibility button to show and hide the demo window
 	if (ImGui::Button("ImGui Demo Window"))
@@ -349,6 +387,40 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4X4& world)
 		ImGui::TreePop();
 	}
 
+	//light list
+	if (ImGui::TreeNode("Scene Lights"))
+	{
+		//for each entity
+		for (int i = 0; i < lights.size(); i++)
+		{
+			//create a new list entry that shows the edits and values as well as the mesh index count
+			if (ImGui::TreeNode((std::string("Light ") + std::to_string(i)).c_str()))
+			{
+				ImGui::RadioButton("Directional", &lights[i].Type, LIGHT_TYPE_DIRECTIONAL);
+				ImGui::SameLine();
+				ImGui::RadioButton("Point", &lights[i].Type, LIGHT_TYPE_POINT);
+
+				if (lights[i].Type == LIGHT_TYPE_DIRECTIONAL)
+				{
+					ImGui::DragFloat3("Direction", &lights[i].Direction.x, 0.01f, -1.0f, 1.0f);
+				}
+				else if (lights[i].Type == LIGHT_TYPE_POINT)
+				{
+					ImGui::DragFloat3("Position", &lights[i].Position.x, 0.01f);
+					ImGui::DragFloat("Range", &lights[i].Range, 0.01f, 0.0f, FLT_MAX);
+				}
+
+				ImGui::ColorEdit3("Color", &lights[i].Color.x);
+				ImGui::DragFloat("Intensity", &lights[i].Intensity, 0.01f, 0.0f, 1.0f);
+
+				//close the current entity
+				ImGui::TreePop();
+			}
+		}
+		//close the entire list
+		ImGui::TreePop();
+	}
+
 	//ending of the window
 	ImGui::End();
 }
@@ -380,26 +452,45 @@ void Game::Update(float deltaTime, float totalTime)
 	BuildUI(bgColor, _world);
 
 	//movement variables
-	float speed = 1.0f;
-	float magnitude = 1.0f;
+	float speed = 2.0f;
+	float magnitude = 0.5f;
 	float offset = static_cast<float>(sin(totalTime * speed) * magnitude);
-	float scaleOffset = static_cast<float>(sin(totalTime * speed) * magnitude + 1.0f);
+	float scaleOffset = static_cast<float>(sin(totalTime * speed) * magnitude + 0.7f);
 
 	//entity movement
-	auto& entity1 = entities[0]->GetTransform();
-	entity1.Rotate(0.0f, 0.0f, deltaTime);
-	auto& entity2 = entities[1]->GetTransform();
-	entity2.SetScale(scaleOffset, scaleOffset, 1.0f);
-	auto& entity3 = entities[2]->GetTransform();
-	entity3.SetPosition(offset, 0.0f, 0.0f);
-	auto& entity4 = entities[3]->GetTransform();
-	entity4.SetPosition(0.0f, offset, 0.0f);
-	auto& entity5 = entities[4]->GetTransform();
-	entity5.Rotate(0.0f, 0.0f, -deltaTime);
-	entity5.SetScale(-scaleOffset/2, -scaleOffset/2, 1.0f);
-	auto& entity6 = entities[5]->GetTransform();
-	entity6.MoveAbsolute(-0.0001f, 0.0f, 0.0f);
-	entity6.Scale(1.0001f, 1.0f, 1.0f);
+	auto& triangle1 = entities[0]->GetTransform();
+	triangle1.Rotate(0.0f, 0.0f, deltaTime);
+	auto& triangle2 = entities[1]->GetTransform();
+	triangle2.SetScale(scaleOffset, scaleOffset, 1.0f);
+	auto& square1 = entities[2]->GetTransform();
+	square1.SetPosition(offset, 0.0f, 0.0f);
+	auto& square2 = entities[3]->GetTransform();
+	square2.SetPosition(0.0f, offset, 0.0f);
+	auto& star1 = entities[4]->GetTransform();
+	star1.Rotate(0.0f, 0.0f, -deltaTime);
+	star1.SetScale(-scaleOffset/2, -scaleOffset/2, 1.0f);
+	auto& star2 = entities[5]->GetTransform();
+	star2.MoveAbsolute(-0.0001f, 0.0f, 0.0f);
+	star2.Scale(1.0001f, 1.0f, 1.0f);
+
+	auto& cube1 = entities[6]->GetTransform();
+	cube1.SetScale(scaleOffset, scaleOffset, scaleOffset);
+	cube1.Rotate(deltaTime, 0.0f, deltaTime);
+	auto& cylinder = entities[7]->GetTransform();
+	cylinder.Rotate(0.0f, deltaTime, 0.0f);
+	auto& helix = entities[8]->GetTransform();
+	helix.Rotate(0.0f, -deltaTime, 0.0f);
+	auto& quad = entities[9]->GetTransform();
+	quad.Rotate(-deltaTime, 0.0f, -deltaTime);
+	auto& doubleSidedQuad = entities[10]->GetTransform();
+	doubleSidedQuad.Rotate(0.0f, -deltaTime, 0.0f);
+	auto& torus = entities[11]->GetTransform();
+	torus.Rotate(0.0f, deltaTime, 0.0f);
+	auto& sphere = entities[12]->GetTransform();
+	sphere.Rotate(-deltaTime, -deltaTime, -deltaTime);
+
+	auto& cube2 = entities[13]->GetTransform();
+	cube2.Rotate(deltaTime, 0.0f, deltaTime);
 
 	//camera update
 	activeCamera->Update(deltaTime);
@@ -428,6 +519,16 @@ void Game::Draw(float deltaTime, float totalTime)
 	//draw all of the entities
 	for (auto& entity : entities)
 	{
+		//update lighting
+		entity->GetMaterial()->GetPixelShader()->SetFloat3("ambient", ambientColor);
+		for (auto& light : lights)
+		{
+			entity->GetMaterial()->GetPixelShader()->SetData(
+				"lights",								// The name of the (eventual) variable in the shader
+				&lights[0],								// The address of the data to set
+				sizeof(Light) * (int)lights.size());	// The size of the data (the whole struct!) to set
+		}
+
 		entity->Draw(context, activeCamera, totalTime);
 	}
 
