@@ -92,11 +92,15 @@ float4 main(VertexToPixel input) : SV_TARGET
     {
         if (lights[i].Type == 0)
         {
-            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) + (Specular(lights[i], input.normal, input.worldPosition) * specularFactor)) * lights[i].Color * lights[i].Intensity * colorTint.xyz;
+            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) 
+                        + (Specular(lights[i], input.normal, input.worldPosition) * specularFactor)) 
+                        * lights[i].Color * lights[i].Intensity * colorTint.xyz;
         }
         else
         {
-            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) + (Specular(lights[i], input.normal, input.worldPosition) * specularFactor)) * lights[i].Color * Attenuate(lights[i], input.worldPosition) * colorTint.xyz;
+            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) 
+                        + (Specular(lights[i], input.normal, input.worldPosition) * specularFactor)) 
+                        * lights[i].Color * Attenuate(lights[i], input.worldPosition) * colorTint.xyz;
         }
     }
     
