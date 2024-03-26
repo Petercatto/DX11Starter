@@ -66,6 +66,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> specularSRV;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
 
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> metalSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> metalSpecSRV;
+
 	//materials
 	std::vector<std::shared_ptr<Material>> materials;
 

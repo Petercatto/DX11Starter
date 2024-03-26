@@ -91,6 +91,20 @@ void Game::Init()
 		0,
 		specularSRV.GetAddressOf());
 
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/rustymetal.png").c_str(),
+		0,
+		metalSRV.GetAddressOf());
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/rustymetal_specular.png").c_str(),
+		0,
+		metalSpecSRV.GetAddressOf());
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -118,7 +132,9 @@ void Game::Init()
 	materials[4]->AddTextureSRV("SpecularMap", specularSRV);
 	materials[4]->AddSampler("BasicSampler", sampler);
 
-	materials[4]->PrepareMaterial();
+	materials[5]->AddTextureSRV("SurfaceTexture", metalSRV);
+	materials[4]->AddTextureSRV("SpecularMap", metalSpecSRV);
+	materials[5]->AddSampler("BasicSampler", sampler);
 
 	//push all the entities
 	entities.push_back(std::make_shared<GameEntity>(triangle, materials[0]));
@@ -554,6 +570,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		//update lighting
 		entity->GetMaterial()->GetPixelShader()->SetFloat3("ambient", ambientColor);
+
+		entity->GetMaterial()->PrepareMaterial();
+
 		for (auto& light : lights)
 		{
 			entity->GetMaterial()->GetPixelShader()->SetData(
