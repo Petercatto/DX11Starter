@@ -65,6 +65,32 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	//create sampler state
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	samplerDesc.MaxAnisotropy = 10;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	device->CreateSamplerState(&samplerDesc, sampler.GetAddressOf());
+
+	//load textures
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/brokentiles.png").c_str(),
+		0,
+		textureSRV.GetAddressOf());
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/brokentiles_specular.png").c_str(),
+		0,
+		specularSRV.GetAddressOf());
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -87,6 +113,13 @@ void Game::Init()
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.5f, pixelShader, vertexShader));	//somewhat shiny white
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, pixelShader, vertexShader));	//shiny white
 
+	//add textures
+	materials[4]->AddTextureSRV("SurfaceTexture", textureSRV);
+	materials[4]->AddTextureSRV("SpecularMap", specularSRV);
+	materials[4]->AddSampler("BasicSampler", sampler);
+
+	materials[4]->PrepareMaterial();
+
 	//push all the entities
 	entities.push_back(std::make_shared<GameEntity>(triangle, materials[0]));
 	entities.push_back(std::make_shared<GameEntity>(triangle, materials[1]));
@@ -95,11 +128,11 @@ void Game::Init()
 	entities.push_back(std::make_shared<GameEntity>(star, materials[1]));
 	entities.push_back(std::make_shared<GameEntity>(star, materials[2]));
 	entities.push_back(std::make_shared<GameEntity>(cube, materials[4]));
-	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[5]));
 	entities.push_back(std::make_shared<GameEntity>(helix, materials[4]));
-	entities.push_back(std::make_shared<GameEntity>(quad, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(quad, materials[5]));
 	entities.push_back(std::make_shared<GameEntity>(doubleSidedQuad, materials[4]));
-	entities.push_back(std::make_shared<GameEntity>(torus, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(torus, materials[5]));
 	entities.push_back(std::make_shared<GameEntity>(sphere, materials[4]));
 	entities.push_back(std::make_shared<GameEntity>(cube, materials[3]));
 

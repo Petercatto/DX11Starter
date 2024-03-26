@@ -11,6 +11,7 @@
 #include "SimpleShader.h"
 #include "Material.h"
 #include "Lights.h"
+#include "WICTextureLoader.h"
 
 class Game 
 	: public DXCore
@@ -59,6 +60,11 @@ private:
 	std::shared_ptr<Mesh> doubleSidedQuad;
 	std::shared_ptr<Mesh> torus;
 	std::shared_ptr<Mesh> sphere;
+
+	//textures
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> specularSRV;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
 
 	//materials
 	std::vector<std::shared_ptr<Material>> materials;

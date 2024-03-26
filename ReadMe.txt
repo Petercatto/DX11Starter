@@ -1,0 +1,1 @@
+Added the ability to use a specular map in my shader.

@@ -1,5 +1,9 @@
 #include "ShaderIncludes.hlsli"
 
+Texture2D SurfaceTexture : register(t0); // "t" registers for textures
+Texture2D SpecularMap : register(t1);
+SamplerState BasicSampler : register(s0); // "s" registers for samplers
+
 //constant buffer definition
 cbuffer ExternalData : register(b0)
 {
@@ -76,6 +80,11 @@ float4 main(VertexToPixel input) : SV_TARGET
     //normalize normals
     input.normal = normalize(input.normal);
     
+    //sample the texture
+    float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
+    //sample the specular map
+    float specularFactor = SpecularMap.Sample(BasicSampler, input.uv).r;
+    
     float3 finalColor = (0.0f, 0.0f, 0.0f);
     
     //add diffuse and specular for each light
@@ -83,13 +92,13 @@ float4 main(VertexToPixel input) : SV_TARGET
     {
         if (lights[i].Type == 0)
         {
-            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) + Specular(lights[i], input.normal, input.worldPosition)) * lights[i].Color * lights[i].Intensity * colorTint.xyz;
+            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) + (Specular(lights[i], input.normal, input.worldPosition) * specularFactor)) * lights[i].Color * lights[i].Intensity * colorTint.xyz;
         }
         else
         {
-            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) + Specular(lights[i], input.normal, input.worldPosition)) * lights[i].Color * Attenuate(lights[i], input.worldPosition) * colorTint.xyz;
+            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) + (Specular(lights[i], input.normal, input.worldPosition) * specularFactor)) * lights[i].Color * Attenuate(lights[i], input.worldPosition) * colorTint.xyz;
         }
     }
     
-    return (float4(ambient, 1.0f) * colorTint) + float4(finalColor, 1.0f);
+    return (float4(ambient, 1.0f) * colorTint) + float4(finalColor * surfaceColor, 1.0f);
 }
