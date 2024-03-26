@@ -133,7 +133,7 @@ void Game::Init()
 	materials[4]->AddSampler("BasicSampler", sampler);
 
 	materials[5]->AddTextureSRV("SurfaceTexture", metalSRV);
-	materials[4]->AddTextureSRV("SpecularMap", metalSpecSRV);
+	materials[5]->AddTextureSRV("SpecularMap", metalSpecSRV);
 	materials[5]->AddSampler("BasicSampler", sampler);
 
 	//push all the entities
