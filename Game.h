@@ -12,6 +12,7 @@
 #include "Material.h"
 #include "Lights.h"
 #include "WICTextureLoader.h"
+#include "Sky.h"
 
 class Game 
 	: public DXCore
@@ -34,7 +35,7 @@ private:
 	void LoadShaders(); 
 	void CreateGeometry();
 	void ImGuiUpdate(float deltaTime);
-	void BuildUI(float color[4], DirectX::XMFLOAT4X4& world);
+	void BuildUI(DirectX::XMFLOAT4X4& world);
 
 	//make bgColor a global variable so it can be accessed by the UI
 	float bgColor[4] = { 0.4f, 0.6f, 0.75f, 1.0f };
@@ -69,6 +70,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> metalSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> metalSpecSRV;
 
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormal;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleNormal;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cushionSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cushionNormal;
+
 	//materials
 	std::vector<std::shared_ptr<Material>> materials;
 
@@ -80,8 +89,12 @@ private:
 	std::shared_ptr<Camera> activeCamera;
 
 	//lighting
-	DirectX::XMFLOAT3 ambientColor = { 0.1f, 0.15f, 0.1817f };
+	DirectX::XMFLOAT3 ambientColor = { 0.1314f, 0.1977f, 0.2768f }; //average of the skybox
+
 	std::vector<Light> lights;
+
+	//sky
+	std::shared_ptr<Sky> sky;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
@@ -97,5 +110,8 @@ private:
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 
 	std::shared_ptr<SimplePixelShader> customShader;
+
+	std::shared_ptr<SimplePixelShader> skyPixelShader;
+	std::shared_ptr<SimpleVertexShader> skyVertexShader;
 };
 

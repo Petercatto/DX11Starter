@@ -2,6 +2,7 @@
 
 Texture2D SurfaceTexture : register(t0); // "t" registers for textures
 Texture2D SpecularMap : register(t1);
+Texture2D NormalMap : register(t2);
 SamplerState BasicSampler : register(s0); // "s" registers for samplers
 
 //constant buffer definition
@@ -50,6 +51,9 @@ float Specular(Light light, float3 normal, float3 worldPos)
     {
         spec = 0.0f;
     }
+    
+    spec *= any(Diffuse(light, normal, worldPos));
+    
     return spec;
 }
 
@@ -76,6 +80,20 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
+    
+    //unpack normal map
+    float3 unpackedNormal = NormalMap.Sample(BasicSampler, input.uv).rgb * 2 - 1;
+    unpackedNormal = normalize(unpackedNormal);
+    
+    //create TBN Matrix
+    float3 N = normalize(input.normal);
+    float3 T = normalize(input.tangent);
+    T = normalize(T - N * dot(T, N)); // Gram-Schmidt orthonormalize process
+    float3 B = cross(T, N); //bitangent
+    float3x3 TBN = float3x3(T, B, N);
+    
+    //transform normals
+    input.normal = mul(unpackedNormal, TBN);
     
     //normalize normals
     input.normal = normalize(input.normal);

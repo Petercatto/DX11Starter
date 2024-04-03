@@ -32,7 +32,7 @@ void GameEntity::SetMaterial(std::shared_ptr<Material> matPtr)
 }
 
 //method that draws entities
-void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera, float totalTime)
+void GameEntity::Draw(std::shared_ptr<Camera> camera, float totalTime)
 {
 	//get the world matrix from the transform
 	DirectX::XMFLOAT4X4 worldMatrix = transform.GetWorldMatrix();

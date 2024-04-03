@@ -22,6 +22,7 @@ struct VertexShaderInput
     float3 localPosition : POSITION; // XYZ position
     float3 normal : NORMAL; // XYZ normal
     float2 uv : TEXCOORD; // UV coordinates
+    float3 tangent : TANGENT; // Tangent coordinates
 };
 
 // Struct representing the data we're sending down the pipeline
@@ -40,6 +41,14 @@ struct VertexToPixel
     float2 uv : TEXCOORD; // UV coordinates
     float3 normal : NORMAL;
     float3 worldPosition : POSITION;
+    float3 tangent : TANGENT; // Tangent coordinates
+};
+
+//vertex to pixel struct
+struct VertexToPixel_Sky
+{
+    float4 position : SV_POSITION; // XYZW position (System Value Position)
+    float3 sampleDir : DIRECTION; //direction it's facing
 };
 
 struct Light

@@ -105,6 +105,41 @@ void Game::Init()
 		0,
 		metalSpecSRV.GetAddressOf());
 
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/flat_normals.png").c_str(),
+		0,
+		defaultNormal.GetAddressOf());
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/cobblestone.png").c_str(),
+		0,
+		cobbleSRV.GetAddressOf());
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/cobblestone_normals.png").c_str(),
+		0,
+		cobbleNormal.GetAddressOf());
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/cushion.png").c_str(),
+		0,
+		cushionSRV.GetAddressOf());
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/cushion_normals.png").c_str(),
+		0,
+		cushionNormal.GetAddressOf());
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -118,23 +153,43 @@ void Game::Init()
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 	ImGui::StyleColorsDark();
 
+	//make sky
+	sky = std::make_shared<Sky>(cube, sampler, device, context, skyPixelShader, skyVertexShader,
+		FixPath(L"../../Assets/Textures/right.png").c_str(),
+		FixPath(L"../../Assets/Textures/left.png").c_str(),
+		FixPath(L"../../Assets/Textures/up.png").c_str(),
+		FixPath(L"../../Assets/Textures/down.png").c_str(),
+		FixPath(L"../../Assets/Textures/front.png").c_str(),
+		FixPath(L"../../Assets/Textures/back.png").c_str());
+
 	//make materials
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), 0.0f, pixelShader, vertexShader));	//dull red
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f, pixelShader, vertexShader));	//somewhat shiny green
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, pixelShader, vertexShader));	//shiny blue
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, customShader, vertexShader));	//custom pixel shader
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, pixelShader, vertexShader));	//dull white
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.5f, pixelShader, vertexShader));	//somewhat shiny white
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, pixelShader, vertexShader));	//shiny white
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, pixelShader, vertexShader));	//dull tile
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, pixelShader, vertexShader));	//shiny metal
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, pixelShader, vertexShader));	//dull cobblestone
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.5f, pixelShader, vertexShader));	//somewhat shiny cushion
 
 	//add textures
 	materials[4]->AddTextureSRV("SurfaceTexture", textureSRV);
 	materials[4]->AddTextureSRV("SpecularMap", specularSRV);
+	materials[4]->AddTextureSRV("NormalMap", defaultNormal);
 	materials[4]->AddSampler("BasicSampler", sampler);
 
 	materials[5]->AddTextureSRV("SurfaceTexture", metalSRV);
 	materials[5]->AddTextureSRV("SpecularMap", metalSpecSRV);
+	materials[5]->AddTextureSRV("NormalMap", defaultNormal);
 	materials[5]->AddSampler("BasicSampler", sampler);
+
+	materials[6]->AddTextureSRV("SurfaceTexture", cobbleSRV);
+	materials[6]->AddTextureSRV("NormalMap", cobbleNormal);
+	materials[6]->AddSampler("BasicSampler", sampler);
+
+	materials[7]->AddTextureSRV("SurfaceTexture", cushionSRV);
+	materials[7]->AddTextureSRV("NormalMap", cushionNormal);
+	materials[7]->AddSampler("BasicSampler", sampler);
 
 	//push all the entities
 	entities.push_back(std::make_shared<GameEntity>(triangle, materials[0]));
@@ -143,13 +198,13 @@ void Game::Init()
 	entities.push_back(std::make_shared<GameEntity>(square, materials[0]));
 	entities.push_back(std::make_shared<GameEntity>(star, materials[1]));
 	entities.push_back(std::make_shared<GameEntity>(star, materials[2]));
-	entities.push_back(std::make_shared<GameEntity>(cube, materials[4]));
-	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[5]));
-	entities.push_back(std::make_shared<GameEntity>(helix, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(cube, materials[6]));
+	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(helix, materials[7]));
 	entities.push_back(std::make_shared<GameEntity>(quad, materials[5]));
-	entities.push_back(std::make_shared<GameEntity>(doubleSidedQuad, materials[4]));
-	entities.push_back(std::make_shared<GameEntity>(torus, materials[5]));
-	entities.push_back(std::make_shared<GameEntity>(sphere, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(doubleSidedQuad, materials[6]));
+	entities.push_back(std::make_shared<GameEntity>(torus, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(sphere, materials[7]));
 	entities.push_back(std::make_shared<GameEntity>(cube, materials[3]));
 
 	//entity initial transforms
@@ -222,6 +277,11 @@ void Game::LoadShaders()
 
 	customShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"CustomPS.cso").c_str());
+
+	skyVertexShader = std::make_shared<SimpleVertexShader>(device, context,
+		FixPath(L"SkyVertexShader.cso").c_str());
+	skyPixelShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"SkyPixelShader.cso").c_str());
 }
 
 
@@ -332,7 +392,7 @@ void Game::ImGuiUpdate(float deltaTime)
 }
 
 //Builds UI utilizing ImGui
-void Game::BuildUI(float color[4], DirectX::XMFLOAT4X4& world)
+void Game::BuildUI(DirectX::XMFLOAT4X4& world)
 {
 	//beginning of window
 	ImGui::Begin((std::string(nameUI) + "'s Window").c_str());
@@ -351,11 +411,6 @@ void Game::BuildUI(float color[4], DirectX::XMFLOAT4X4& world)
 	{
 		strncpy_s(nameUI, textInput, IM_ARRAYSIZE(nameUI));
 	}
-
-	//background color picker which takes in the bgcolor which is now a public variable
-	ImGui::ColorEdit4("Background Color", &color[0]);
-	//update ambientcolor
-	ambientColor = { color[0] / 4,color[1] / 4,color[2] / 4 };
 
 	//demo window visibility button to show and hide the demo window
 	if (ImGui::Button("ImGui Demo Window"))
@@ -498,7 +553,7 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	//update ImGui and UI
 	ImGuiUpdate(deltaTime);
-	BuildUI(bgColor, _world);
+	BuildUI(_world);
 
 	//movement variables
 	float speed = 2.0f;
@@ -581,8 +636,11 @@ void Game::Draw(float deltaTime, float totalTime)
 				sizeof(Light) * (int)lights.size());	// The size of the data (the whole struct!) to set
 		}
 
-		entity->Draw(context, activeCamera, totalTime);
+		entity->Draw(activeCamera, totalTime);
 	}
+
+	//draw sky last
+	sky->Draw(activeCamera);
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen

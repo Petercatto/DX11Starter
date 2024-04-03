@@ -38,6 +38,9 @@ VertexToPixel main( VertexShaderInput input )
 	//apply normal transformations
     output.normal = mul((float3x3) worldInvTranspose, input.normal);
     output.worldPosition = mul(world, float4(input.localPosition, 1)).xyz;
+	
+	//apply tangents for normal maps
+    output.tangent = mul((float3x3) world, input.tangent);
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer
