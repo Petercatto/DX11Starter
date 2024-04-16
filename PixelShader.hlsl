@@ -103,7 +103,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     //sample the specular map
     float specularFactor = SpecularMap.Sample(BasicSampler, input.uv).r;
     
-    float3 finalColor = (0.0f, 0.0f, 0.0f);
+    float3 finalColor = 0.0f;
     
     //add diffuse and specular for each light
     for (int i = 0; i < MAX_LIGHTS; i++)

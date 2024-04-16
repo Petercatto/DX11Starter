@@ -13,6 +13,7 @@
 #include "Lights.h"
 #include "WICTextureLoader.h"
 #include "Sky.h"
+#include "Emitter.h"
 
 class Game 
 	: public DXCore
@@ -78,6 +79,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cushionSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cushionNormal;
 
+	//particle texture
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> snowSRV;
+
 	//materials
 	std::vector<std::shared_ptr<Material>> materials;
 
@@ -96,6 +100,9 @@ private:
 	//sky
 	std::shared_ptr<Sky> sky;
 
+	//emitters
+	std::vector<std::shared_ptr<Emitter>> emitters;
+
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
 	//     Component Object Model, which DirectX objects do
@@ -113,5 +120,13 @@ private:
 
 	std::shared_ptr<SimplePixelShader> skyPixelShader;
 	std::shared_ptr<SimpleVertexShader> skyVertexShader;
+
+	//particle shader data
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;
+	
+	//loader particle shaders
+	std::shared_ptr<SimpleVertexShader> particleVertexShader;
+	std::shared_ptr<SimplePixelShader> particlePixelShader;
 };
 

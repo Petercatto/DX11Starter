@@ -7,8 +7,10 @@ cbuffer ExternalData : register(b0)
     float4x4 projection;
 }
 
+//entry point for the vertex shader
 VertexToPixel_Sky main(VertexShaderInput input)
 {
+    //define output
     VertexToPixel_Sky output;
     
     //zero the translation of the view matrix

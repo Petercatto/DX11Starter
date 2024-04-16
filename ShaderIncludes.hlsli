@@ -30,6 +30,15 @@ struct VertexShaderInput
 // - At a minimum, we need a piece of data defined tagged as SV_POSITION
 // - The name of the struct itself is unimportant, but should be descriptive
 // - Each variable must have a semantic, which defines its usage
+
+//vs input struct for particles
+struct VertexShaderInput_Particle
+{
+    float3 localPosition : POSITION; // XYZ position
+    float2 uv : TEXCOORD; // UV coordinates
+    float4 color : COLOR; // color
+};
+
 struct VertexToPixel
 {
 	// Data type
@@ -44,11 +53,19 @@ struct VertexToPixel
     float3 tangent : TANGENT; // Tangent coordinates
 };
 
-//vertex to pixel struct
+//vertex to pixel struct for sky
 struct VertexToPixel_Sky
 {
     float4 position : SV_POSITION; // XYZW position (System Value Position)
     float3 sampleDir : DIRECTION; //direction it's facing
+};
+
+//vertex to pixel struct for particle
+struct VertexToPixel_Particle
+{
+    float4 position : SV_POSITION; // XYZW position
+    float2 uv : TEXCOORD; // UV coordinates
+    float4 color : COLOR; // color
 };
 
 struct Light

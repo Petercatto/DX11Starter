@@ -140,6 +140,13 @@ void Game::Init()
 		0,
 		cushionNormal.GetAddressOf());
 
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),
+		FixPath(L"../../Assets/Textures/snow.png").c_str(),
+		0,
+		snowSRV.GetAddressOf());
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -257,6 +264,49 @@ void Game::Init()
 	lights[4].Color = { 1.0f, 0.0f, 1.0f };
 	lights[4].Intensity = 1.0f;
 
+	//particles
+	//depth state
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, particleDepthState.GetAddressOf());
+
+	//additive blend state
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, particleBlendState.GetAddressOf());
+
+	//particle materials
+	std::shared_ptr<Material> snowParticle = std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, particlePixelShader, particleVertexShader);
+	snowParticle->AddTextureSRV("Particle", snowSRV);
+	snowParticle->AddSampler("BasicSampler", sampler);
+
+	emitters.push_back(std::make_shared<Emitter>(
+		160,							// Max particles
+		30,								// Particles per second
+		5.0f,							// Particle lifetime
+		0.1f,							// Start size
+		4.0f,							// End size
+		XMFLOAT4(1, 0.1f, 0.1f, 0.7f),	// Start color
+		XMFLOAT4(1, 0.6f, 0.1f, 0),		// End color
+		XMFLOAT3(-2, 2, 0),				// Start velocity
+		XMFLOAT3(0.2f, 0.2f, 0.2f),		// Velocity randomness range
+		XMFLOAT3(2, 0, 0),				// Emitter position
+		XMFLOAT3(0.1f, 0.1f, 0.1f),		// Position randomness range
+		XMFLOAT4(-2, 2, -2, 2),			// Random rotation ranges (startMin, startMax, endMin, endMax)
+		XMFLOAT3(0, -1, 0),				// Constant acceleration
+		device,
+		snowParticle));
 
 }
 
@@ -282,6 +332,11 @@ void Game::LoadShaders()
 		FixPath(L"SkyVertexShader.cso").c_str());
 	skyPixelShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"SkyPixelShader.cso").c_str());
+
+	particleVertexShader = std::make_shared<SimpleVertexShader>(device, context,
+		FixPath(L"particleVertexShader.cso").c_str());
+	particlePixelShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"particlePixelShader.cso").c_str());
 }
 
 
@@ -599,6 +654,20 @@ void Game::Update(float deltaTime, float totalTime)
 	//camera update
 	activeCamera->Update(deltaTime);
 
+	//reset delta time so a flurry of particles arent released due to build up
+	static bool firstFrame = true;
+	if (firstFrame) 
+	{ 
+		deltaTime = 0.0f; 
+		firstFrame = false; 
+	}
+
+	//update emitters
+	for (auto& e : emitters)
+	{
+		e->Update(deltaTime);
+	}
+
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
 		Quit();
@@ -641,6 +710,21 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	//draw sky last
 	sky->Draw(activeCamera);
+
+	//set particle state
+	context->OMSetBlendState(particleBlendState.Get(), 0, 0xffffffff);	//additive blending
+	context->OMSetDepthStencilState(particleDepthState.Get(), 0);	
+
+	//draw emitters
+	for (auto& e : emitters)
+	{
+		//e->Draw(context, activeCamera);
+	}
+
+	//reset states for next frame
+	context->OMSetBlendState(0, 0, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
+	context->RSSetState(0);
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
