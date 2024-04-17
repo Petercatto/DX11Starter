@@ -148,7 +148,11 @@ void Sky::Draw(std::shared_ptr<Camera> camera)
 	pixelShader->SetShaderResourceView("CubeMap", cubeMapSRV);
 
 	//draw mesh
-	cube->Draw(context);
+	cube->Draw();
+
+	//unbind the cube map
+	ID3D11ShaderResourceView* nullSRV = nullptr;
+	context->PSSetShaderResources(0, 1, &nullSRV);
 
 	//reset render states
 	context->RSSetState(nullptr);

@@ -22,7 +22,7 @@ public:
 	void SetMaterial(std::shared_ptr<Material> matPtr);
 
 	//draw method
-	void Draw(std::shared_ptr<Camera> camera, float totalTime, Microsoft::WRL::ComPtr<ID3D11DeviceContext> c);
+	void Draw(std::shared_ptr<Camera> camera, float totalTime);
 private:
 	//transform, mesh and material data
 	Transform transform;

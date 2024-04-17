@@ -750,7 +750,7 @@ void Game::Draw(float deltaTime, float totalTime)
 				sizeof(Light) * (int)lights.size());	// The size of the data (the whole struct!) to set
 		}
 
-		entity->Draw(activeCamera, totalTime, context);
+		entity->Draw(activeCamera, totalTime);
 	}
 
 	//draw sky last
