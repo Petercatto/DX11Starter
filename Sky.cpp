@@ -137,20 +137,18 @@ void Sky::Draw(std::shared_ptr<Camera> camera)
 	vertexShader->SetShader();
 	pixelShader->SetShader();
 
-	//set sampler state and srv
-	pixelShader->SetSamplerState("BasicSampler", sampler);
-	pixelShader->SetShaderResourceView("CubeMap", cubeMapSRV);
-
 	//set view and projection matrices
 	vertexShader->SetMatrix4x4("view", camera->GetView());				
 	vertexShader->SetMatrix4x4("projection", camera->GetProjection());
 
-	//copy buffer data
-	pixelShader->CopyAllBufferData();
+	//copy vertex buffer data
 	vertexShader->CopyAllBufferData();
 
+	//set srv
+	pixelShader->SetShaderResourceView("CubeMap", cubeMapSRV);
+
 	//draw mesh
-	cube->Draw();
+	cube->Draw(context);
 
 	//reset render states
 	context->RSSetState(nullptr);

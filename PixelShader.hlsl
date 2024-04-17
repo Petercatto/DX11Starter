@@ -1,60 +1,17 @@
 #include "ShaderIncludes.hlsli"
 
-Texture2D SurfaceTexture : register(t0); // "t" registers for textures
-Texture2D SpecularMap : register(t1);
-Texture2D NormalMap : register(t2);
+Texture2D Albedo : register(t0);
+Texture2D NormalMap : register(t1);
+Texture2D RoughnessMap : register(t2);
+Texture2D MetalnessMap : register(t3);
 SamplerState BasicSampler : register(s0); // "s" registers for samplers
 
 //constant buffer definition
 cbuffer ExternalData : register(b0)
 {
     float4 colorTint;
-    float roughness;
     float3 cameraPosition;
-    float3 ambient;
     Light lights[MAX_LIGHTS];
-}
-
-//calculate the diffuse
-float3 Diffuse(Light light, float3 normal, float3 worldPos)
-{
-    if (light.Type == 0)
-    {
-        return (saturate(dot(normal, -light.Direction))); //normalized direction to the light
-    }
-    else
-    {
-        return (saturate(dot(normal, normalize(light.Position - worldPos)))); //normalized direction to the light
-    }
-}
-
-//calculate the specular
-float Specular(Light light, float3 normal, float3 worldPos)
-{
-    float specExponent = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
-    float3 V = normalize(cameraPosition - worldPos);
-    float3 R;
-    if (light.Type == 0)
-    {
-        R = reflect(normalize(light.Direction), normal);
-    }
-    else
-    {
-        R = reflect(-normalize(light.Position - worldPos), normal);
-    }
-    float spec;
-    if(specExponent > 0.05f)
-    {
-        spec = pow(saturate(dot(R, V)), specExponent);
-    }
-    else
-    {
-        spec = 0.0f;
-    }
-    
-    spec *= any(Diffuse(light, normal, worldPos));
-    
-    return spec;
 }
 
 //calculate the attenuation
@@ -98,29 +55,61 @@ float4 main(VertexToPixel input) : SV_TARGET
     //normalize normals
     input.normal = normalize(input.normal);
     
-    //sample the texture
-    float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
-    //sample the specular map
-    float specularFactor = SpecularMap.Sample(BasicSampler, input.uv).r;
+    //sample the texture (gamma corrected)
+    float3 albedoColor = pow(Albedo.Sample(BasicSampler, input.uv).rgb, 2.2f);
+    
+    //sample roughness map
+    float roughness = RoughnessMap.Sample(BasicSampler, input.uv).r;
+    
+    //sample metalness map
+    float metalness = MetalnessMap.Sample(BasicSampler, input.uv).r;
+
+    // Specular color determination -----------------
+    // Assume albedo texture is actually holding specular color where metalness == 1
+    // Note the use of lerp here - metal is generally 0 or 1, but might be in between
+    // because of linear texture sampling, so we lerp the specular color to match
+    float3 specularColor = lerp(F0_NON_METAL, albedoColor.rgb, metalness);
+    
+    //for all lights
+    float3 toCam = normalize(cameraPosition - input.worldPosition);
+    float3 F;
     
     float3 finalColor = 0.0f;
     
     //add diffuse and specular for each light
     for (int i = 0; i < MAX_LIGHTS; i++)
     {
+        //directional light
         if (lights[i].Type == 0)
         {
-            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) 
-                        + (Specular(lights[i], input.normal, input.worldPosition) * specularFactor)) 
-                        * lights[i].Color * lights[i].Intensity * colorTint.xyz;
+            float3 toLight = normalize(-lights[i].Direction);
+            
+            // Calculate the light amounts
+            float diff = DiffusePBR(input.normal, toLight);
+            float3 spec = MicrofacetBRDF(input.normal, toLight, toCam, roughness, specularColor, F);
+
+            // Calculate diffuse with energy conservation, including cutting diffuse for metals
+            float3 balancedDiff = DiffuseEnergyConserve(diff, F, metalness);
+            
+            finalColor += (balancedDiff * albedoColor + spec) * lights[i].Color * lights[i].Intensity * colorTint.xyz;
         }
+        //point light
         else
         {
-            finalColor += (Diffuse(lights[i], input.normal, input.worldPosition) 
-                        + (Specular(lights[i], input.normal, input.worldPosition) * specularFactor)) 
-                        * lights[i].Color * Attenuate(lights[i], input.worldPosition) * colorTint.xyz;
+            float3 toLight = normalize(lights[i].Position - input.worldPosition);
+            
+            // Calculate the light amounts
+            float diff = DiffusePBR(input.normal, toLight);
+            float3 spec = MicrofacetBRDF(input.normal, toLight, toCam, roughness, specularColor, F);
+
+            // Calculate diffuse with energy conservation, including cutting diffuse for metals
+            float3 balancedDiff = DiffuseEnergyConserve(diff, F, metalness);
+            
+            finalColor += (balancedDiff * albedoColor + spec) * lights[i].Color * Attenuate(lights[i], input.worldPosition) * colorTint.xyz;
         }
     }
     
-    return (float4(ambient, 1.0f) * colorTint) + float4(finalColor * surfaceColor, 1.0f);
+    float4 finalOutput = float4(finalColor, 1.0f);
+    //gamma corrected
+    return pow(finalOutput, 1.0f / 2.2f);
 }

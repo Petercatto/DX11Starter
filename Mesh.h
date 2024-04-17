@@ -25,7 +25,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetIndexBuffer();
 	int GetIndexCount();
-	void Draw();
+	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c);
 	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
 
 	//constructor (takes in device context, device, vertices, vertex count, indices, & indice count)

@@ -69,7 +69,7 @@ int Mesh::GetIndexCount()
 	return indexCount;
 }
 
-void Mesh::Draw()
+void Mesh::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c)
 {
 	//draw geometry
 	//steps are repeated for each object
@@ -77,17 +77,17 @@ void Mesh::Draw()
     UINT offset = 0;
 
 	//set buffers in the input assembler (IA) stage
-    context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-    context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+    c->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+    c->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	// Set the primitive topology to triangle list
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	c->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     //tell direct3D to draw
 	//begins the rendering pipeline on the GPU
 	//uses current direct3D resources such as shaders, buffers, etc
 	//DrawIndexed() uses the index buffer to look up corresponding vertices in the vertex buffer
-    context->DrawIndexed(
+    c->DrawIndexed(
         indexCount,	//number of indices to use
         0,			//offset to the first index
         0);			//offset to add to each index when looking up vertices

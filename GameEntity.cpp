@@ -32,7 +32,7 @@ void GameEntity::SetMaterial(std::shared_ptr<Material> matPtr)
 }
 
 //method that draws entities
-void GameEntity::Draw(std::shared_ptr<Camera> camera, float totalTime)
+void GameEntity::Draw(std::shared_ptr<Camera> camera, float totalTime, Microsoft::WRL::ComPtr<ID3D11DeviceContext> c)
 {
 	//get the world matrix from the transform
 	DirectX::XMFLOAT4X4 worldMatrix = transform.GetWorldMatrix();
@@ -45,8 +45,7 @@ void GameEntity::Draw(std::shared_ptr<Camera> camera, float totalTime)
 	vsData->SetMatrix4x4("view", camera->GetView());				// names in your
 	vsData->SetMatrix4x4("projection", camera->GetProjection());	// shader’s cbuffer!
 
-	//sets lighting values for roughness
-	psData->SetFloat("roughness", material->GetRoughness());
+	//sets lighting values
 	psData->SetFloat3("cameraPosition", camera->GetTransform().GetPosition());
 	vsData->SetMatrix4x4("worldInvTranspose", transform.GetWorldInverseTransposeMatrix());
 
@@ -59,5 +58,5 @@ void GameEntity::Draw(std::shared_ptr<Camera> camera, float totalTime)
 	material->GetPixelShader()->SetShader();
 
 	//draw the mesh
-	mesh->Draw();
+	mesh->Draw(c);
 }

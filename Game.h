@@ -64,20 +64,42 @@ private:
 	std::shared_ptr<Mesh> sphere;
 
 	//textures
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> specularSRV;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> metalSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> metalSpecSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeRoughness;
 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleRoughness;
 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobbleNormal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorRoughness;
 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cushionSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cushionNormal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paintRoughness;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughRoughness;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scratchedAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scratchedMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scratchedNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scratchedRoughness;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> woodAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> woodMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> woodNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> woodRoughness;
 
 	//particle texture
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> snowSRV;
