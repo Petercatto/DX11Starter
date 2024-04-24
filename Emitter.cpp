@@ -259,7 +259,7 @@ void Emitter::SpawnParticles()
 	particles[firstDeadPTCIndex].Size = startSize;
 	particles[firstDeadPTCIndex].Color = startColor;
 
-	particles[firstDeadPTCIndex].StartPos = XMFLOAT3(0, 0, 0);
+	particles[firstDeadPTCIndex].StartPos = transform.GetPosition();
 	particles[firstDeadPTCIndex].StartPos.x += (((float)rand() / RAND_MAX) * 2 - 1) * positionVariance.x;
 	particles[firstDeadPTCIndex].StartPos.y += (((float)rand() / RAND_MAX) * 2 - 1) * positionVariance.y;
 	particles[firstDeadPTCIndex].StartPos.z += (((float)rand() / RAND_MAX) * 2 - 1) * positionVariance.z;

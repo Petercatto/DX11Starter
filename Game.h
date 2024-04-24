@@ -37,6 +37,11 @@ private:
 	void CreateGeometry();
 	void ImGuiUpdate(float deltaTime);
 	void BuildUI(DirectX::XMFLOAT4X4& world);
+	void LoadAssetsAndCreateEntities();
+	void CreateAndLoadLights();
+	void CreateShadowMapResources();
+	void RenderShadowMaps();
+	void CreateParticleResources();
 
 	//make bgColor a global variable so it can be accessed by the UI
 	float bgColor[4] = { 0.4f, 0.6f, 0.75f, 1.0f };
@@ -142,6 +147,17 @@ private:
 
 	std::shared_ptr<SimplePixelShader> skyPixelShader;
 	std::shared_ptr<SimpleVertexShader> skyVertexShader;
+
+	//shadow resources
+	int shadowMapResolution;
+	float lightProjectionSize;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
+	DirectX::XMFLOAT4X4 lightViewMatrix;
+	DirectX::XMFLOAT4X4 lightProjectionMatrix;
+	std::shared_ptr<SimpleVertexShader> shadowVertexShader;
 
 	//particle shader data
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;

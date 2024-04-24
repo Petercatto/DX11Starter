@@ -8,6 +8,9 @@ cbuffer ExternalData : register(b0)
     float4x4 view;
     float4x4 projection;
     float4x4 worldInvTranspose;
+	
+    float4x4 lightView;
+    float4x4 lightProjection;
 }
 
 // --------------------------------------------------------
@@ -41,6 +44,9 @@ VertexToPixel main( VertexShaderInput input )
 	
 	//apply tangents for normal maps
     output.tangent = mul((float3x3) world, input.tangent);
+	
+    matrix shadowWVP = mul(lightProjection, mul(lightView, world));
+    output.shadowMapPos = mul(shadowWVP, float4(input.localPosition, 1.0f));
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer

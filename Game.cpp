@@ -65,110 +65,16 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	//create sampler state
-	D3D11_SAMPLER_DESC samplerDesc = {};
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	samplerDesc.MaxAnisotropy = 10;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	device->CreateSamplerState(&samplerDesc, sampler.GetAddressOf());
-
-	//load textures
-	CreateWICTextureFromFile(device.Get(), context.Get(), 
-		FixPath(L"../../Assets/Textures/bronze_albedo.png").c_str(), 0, bronzeAlbedo.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(), 
-		FixPath(L"../../Assets/Textures/bronze_metal.png").c_str(), 0, bronzeMetal.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/bronze_normals.png").c_str(), 0, bronzeNormals.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/bronze_roughness.png").c_str(), 0, bronzeRoughness.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/cobblestone_albedo.png").c_str(), 0, cobbleAlbedo.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/cobblestone_metal.png").c_str(), 0, cobbleMetal.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/cobblestone_normals.png").c_str(), 0, cobbleNormals.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/cobblestone_roughness.png").c_str(), 0, cobbleRoughness.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/floor_albedo.png").c_str(), 0, floorAlbedo.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/floor_metal.png").c_str(), 0, floorMetal.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/floor_normals.png").c_str(), 0, floorNormals.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/floor_roughness.png").c_str(), 0, floorRoughness.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/paint_albedo.png").c_str(), 0, paintAlbedo.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/paint_metal.png").c_str(), 0, paintMetal.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/paint_normals.png").c_str(), 0, paintNormals.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/paint_roughness.png").c_str(), 0, paintRoughness.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/rough_albedo.png").c_str(), 0, roughAlbedo.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/rough_metal.png").c_str(), 0, roughMetal.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/rough_normals.png").c_str(), 0, roughNormals.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/rough_roughness.png").c_str(), 0, roughRoughness.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/scratched_albedo.png").c_str(), 0, scratchedAlbedo.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/scratched_metal.png").c_str(), 0, scratchedMetal.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/scratched_normals.png").c_str(), 0, scratchedNormals.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/scratched_roughness.png").c_str(), 0, scratchedRoughness.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/wood_albedo.png").c_str(), 0, woodAlbedo.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/wood_metal.png").c_str(), 0, woodMetal.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/wood_normals.png").c_str(), 0, woodNormals.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/wood_roughness.png").c_str(), 0, woodRoughness.GetAddressOf());
-	
-	CreateWICTextureFromFile(device.Get(), context.Get(),
-		FixPath(L"../../Assets/Textures/snow.png").c_str(), 0, snowSRV.GetAddressOf());
 
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateGeometry();
+
+	//load all assets and create entities
+	LoadAssetsAndCreateEntities();
+	CreateAndLoadLights();
 
 	// Initialize ImGui itself & platform/renderer backends
 	IMGUI_CHECKVERSION();
@@ -177,185 +83,10 @@ void Game::Init()
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 	ImGui::StyleColorsDark();
 
-	//make sky
-	sky = std::make_shared<Sky>(cube, sampler, device, context, skyPixelShader, skyVertexShader,
-		FixPath(L"../../Assets/Textures/right.png").c_str(),
-		FixPath(L"../../Assets/Textures/left.png").c_str(),
-		FixPath(L"../../Assets/Textures/up.png").c_str(),
-		FixPath(L"../../Assets/Textures/down.png").c_str(),
-		FixPath(L"../../Assets/Textures/front.png").c_str(),
-		FixPath(L"../../Assets/Textures/back.png").c_str());
+	CreateShadowMapResources();
 
-	//set sampler state
-	skyPixelShader->SetSamplerState("BasicSampler", sampler);
-
-	//make materials
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), pixelShader, vertexShader));	//red
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), pixelShader, vertexShader));	//green
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//blue
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), customShader, vertexShader));	//custom pixel shader
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//bronze
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//cobble
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//floor
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//paint
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//rough
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));  //scratched
-	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//wood
-
-	//add textures
-	materials[4]->AddTextureSRV("Albedo", bronzeAlbedo);
-	materials[4]->AddTextureSRV("NormalMap", bronzeNormals);
-	materials[4]->AddTextureSRV("RoughnessMap", bronzeRoughness);
-	materials[4]->AddTextureSRV("MetalnessMap", bronzeMetal);
-	materials[4]->AddSampler("BasicSampler", sampler);
-
-	materials[5]->AddTextureSRV("Albedo", cobbleAlbedo);
-	materials[5]->AddTextureSRV("NormalMap", cobbleNormals);
-	materials[5]->AddTextureSRV("RoughnessMap", cobbleRoughness);
-	materials[5]->AddTextureSRV("MetalnessMap", cobbleMetal);
-	materials[5]->AddSampler("BasicSampler", sampler);
-
-	materials[6]->AddTextureSRV("Albedo", floorAlbedo);
-	materials[6]->AddTextureSRV("NormalMap", floorNormals);
-	materials[6]->AddTextureSRV("RoughnessMap", floorRoughness);
-	materials[6]->AddTextureSRV("MetalnessMap", floorMetal);
-	materials[6]->AddSampler("BasicSampler", sampler);
-
-	materials[7]->AddTextureSRV("Albedo", paintAlbedo);
-	materials[7]->AddTextureSRV("NormalMap", paintNormals);
-	materials[7]->AddTextureSRV("RoughnessMap", paintRoughness);
-	materials[7]->AddTextureSRV("MetalnessMap", paintMetal);
-	materials[7]->AddSampler("BasicSampler", sampler);
-
-	materials[8]->AddTextureSRV("Albedo", roughAlbedo);
-	materials[8]->AddTextureSRV("NormalMap", roughNormals);
-	materials[8]->AddTextureSRV("RoughnessMap", roughRoughness);
-	materials[8]->AddTextureSRV("MetalnessMap", roughMetal);
-	materials[8]->AddSampler("BasicSampler", sampler);
-
-	materials[9]->AddTextureSRV("Albedo", scratchedAlbedo);
-	materials[9]->AddTextureSRV("NormalMap", scratchedNormals);
-	materials[9]->AddTextureSRV("RoughnessMap", scratchedRoughness);
-	materials[9]->AddTextureSRV("MetalnessMap", scratchedMetal);
-	materials[9]->AddSampler("BasicSampler", sampler);
-
-	materials[10]->AddTextureSRV("Albedo", woodAlbedo);
-	materials[10]->AddTextureSRV("NormalMap", woodNormals);
-	materials[10]->AddTextureSRV("RoughnessMap", woodRoughness);
-	materials[10]->AddTextureSRV("MetalnessMap", woodMetal);
-	materials[10]->AddSampler("BasicSampler", sampler);
-
-
-	//push all the entities
-	entities.push_back(std::make_shared<GameEntity>(triangle, materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(triangle, materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(square, materials[2]));
-	entities.push_back(std::make_shared<GameEntity>(square, materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(star, materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(star, materials[2]));
-	entities.push_back(std::make_shared<GameEntity>(cube, materials[4]));
-	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[5]));
-	entities.push_back(std::make_shared<GameEntity>(helix, materials[6]));
-	entities.push_back(std::make_shared<GameEntity>(quad, materials[7]));
-	entities.push_back(std::make_shared<GameEntity>(doubleSidedQuad, materials[8]));
-	entities.push_back(std::make_shared<GameEntity>(torus, materials[9]));
-	entities.push_back(std::make_shared<GameEntity>(sphere, materials[10]));
-	entities.push_back(std::make_shared<GameEntity>(cube, materials[3]));
-
-	//entity initial transforms
-	entities[6]->GetTransform().SetPosition(-9.0f, 0.0f, 0.0f);
-	entities[7]->GetTransform().SetPosition(-6.0f, 0.0f, 0.0f);
-	entities[8]->GetTransform().SetPosition(-3.0f, 0.0f, 0.0f);
-	entities[9]->GetTransform().SetPosition(0.0f, 0.0f, 0.0f);
-	entities[9]->GetTransform().SetRotation(-XM_PI / 2, 0.0f, 0.0f);
-	entities[10]->GetTransform().SetPosition(3.0f, 0.0f, 0.0f);
-	entities[10]->GetTransform().SetRotation(-XM_PI / 2, 0.0f, 0.0f);
-	entities[11]->GetTransform().SetPosition(6.0f, 0.0f, 0.0f);
-	entities[12]->GetTransform().SetPosition(9.0f, 0.0f, 0.0f);
-	entities[13]->GetTransform().SetPosition(0.0f, 0.0f, -20.0f);
-
-	//make camera
-	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(0.0f, 1.0f, -5.0f, 7.5f, 0.02f, XM_PI / 2.0f, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(1.0f, -1.0f, -5.0f, 7.5f, 0.02f, XM_PI / 4.0f, (float)this->windowWidth / this->windowHeight, true));
-	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, false));
-
-	//set the current active camera
-	activeCamera = cameras[0];
-
-	//lights
-	lights.push_back({});
-	lights.push_back({});
-	lights.push_back({});
-	lights.push_back({});
-	lights.push_back({});
-	lights[0].Type = LIGHT_TYPE_DIRECTIONAL;
-	lights[0].Direction = { 1.0f, 0.0f, 0.0f };
-	lights[0].Color = { 1.0f, 0.0f, 0.0f };
-	lights[0].Intensity = 1.0f;
-	lights[1].Type = LIGHT_TYPE_DIRECTIONAL;
-	lights[1].Direction = { 0.0f, -1.0f, 0.0f };
-	lights[1].Color = { 0.0f, 1.0f, 0.0f };
-	lights[1].Intensity = 1.0f;
-	lights[2].Type = LIGHT_TYPE_DIRECTIONAL;
-	lights[2].Direction = { -1.0f, 0.0f, 0.0f };
-	lights[2].Color = { 0.0f, 0.0f, 1.0f };
-	lights[2].Intensity = 1.0f;
-	lights[3].Type = LIGHT_TYPE_POINT;
-	lights[3].Position = { -5.0f, 0.0f, -5.0f };
-	lights[3].Range = 10.0f;
-	lights[3].Color = { 0.0f, 1.0f, 1.0f };
-	lights[3].Intensity = 1.0f;
-	lights[4].Type = LIGHT_TYPE_POINT;
-	lights[4].Position = { 5.0f, 0.0f, 5.0f };
-	lights[4].Range = 10.0f;
-	lights[4].Color = { 1.0f, 0.0f, 1.0f };
-	lights[4].Intensity = 1.0f;
-
-	//particles
-	//depth state
-	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
-	dsDesc.DepthEnable = true;
-	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	device->CreateDepthStencilState(&dsDesc, particleDepthState.GetAddressOf());
-
-	//additive blend state
-	D3D11_BLEND_DESC blend = {};
-	blend.AlphaToCoverageEnable = false;
-	blend.IndependentBlendEnable = false;
-	blend.RenderTarget[0].BlendEnable = true;
-	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	device->CreateBlendState(&blend, particleBlendState.GetAddressOf());
-
-	//particle materials
-	std::shared_ptr<Material> snowParticle = std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), particlePixelShader, particleVertexShader);
-	snowParticle->AddTextureSRV("Particle", snowSRV);
-	snowParticle->AddSampler("BasicSampler", sampler);
-
-	emitters.push_back(std::make_shared<Emitter>(
-		160,							// Max particles
-		30,								// Particles per second
-		5.0f,							// Particle lifetime
-		0.1f,							// Start size
-		4.0f,							// End size
-		XMFLOAT4(1, 0.1f, 0.1f, 0.7f),	// Start color
-		XMFLOAT4(1, 0.6f, 0.1f, 0),		// End color
-		XMFLOAT3(-2, 2, 0),				// Start velocity
-		XMFLOAT3(0.2f, 0.2f, 0.2f),		// Velocity randomness range
-		XMFLOAT3(2, 0, 0),				// Emitter position
-		XMFLOAT3(0.1f, 0.1f, 0.1f),		// Position randomness range
-		XMFLOAT4(-2, 2, -2, 2),			// Random rotation ranges (startMin, startMax, endMin, endMax)
-		XMFLOAT3(0, -1, 0),				// Constant acceleration
-		device,
-		snowParticle));
-
+	//create the particle resources
+	CreateParticleResources();
 }
 
 // --------------------------------------------------------
@@ -380,6 +111,9 @@ void Game::LoadShaders()
 		FixPath(L"SkyVertexShader.cso").c_str());
 	skyPixelShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"SkyPixelShader.cso").c_str());
+
+	shadowVertexShader = std::make_shared<SimpleVertexShader>(device, context,
+		FixPath(L"ShadowVertexShader.cso").c_str());
 
 	particleVertexShader = std::make_shared<SimpleVertexShader>(device, context,
 		FixPath(L"particleVertexShader.cso").c_str());
@@ -632,6 +366,377 @@ void Game::BuildUI(DirectX::XMFLOAT4X4& world)
 	ImGui::End();
 }
 
+void Game::LoadAssetsAndCreateEntities()
+{
+	//create sampler state
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	samplerDesc.MaxAnisotropy = 10;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	device->CreateSamplerState(&samplerDesc, sampler.GetAddressOf());
+
+	//load textures
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/bronze_albedo.png").c_str(), 0, bronzeAlbedo.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/bronze_metal.png").c_str(), 0, bronzeMetal.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/bronze_normals.png").c_str(), 0, bronzeNormals.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/bronze_roughness.png").c_str(), 0, bronzeRoughness.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/cobblestone_albedo.png").c_str(), 0, cobbleAlbedo.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/cobblestone_metal.png").c_str(), 0, cobbleMetal.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/cobblestone_normals.png").c_str(), 0, cobbleNormals.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/cobblestone_roughness.png").c_str(), 0, cobbleRoughness.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/floor_albedo.png").c_str(), 0, floorAlbedo.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/floor_metal.png").c_str(), 0, floorMetal.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/floor_normals.png").c_str(), 0, floorNormals.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/floor_roughness.png").c_str(), 0, floorRoughness.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/paint_albedo.png").c_str(), 0, paintAlbedo.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/paint_metal.png").c_str(), 0, paintMetal.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/paint_normals.png").c_str(), 0, paintNormals.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/paint_roughness.png").c_str(), 0, paintRoughness.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/rough_albedo.png").c_str(), 0, roughAlbedo.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/rough_metal.png").c_str(), 0, roughMetal.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/rough_normals.png").c_str(), 0, roughNormals.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/rough_roughness.png").c_str(), 0, roughRoughness.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/scratched_albedo.png").c_str(), 0, scratchedAlbedo.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/scratched_metal.png").c_str(), 0, scratchedMetal.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/scratched_normals.png").c_str(), 0, scratchedNormals.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/scratched_roughness.png").c_str(), 0, scratchedRoughness.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/wood_albedo.png").c_str(), 0, woodAlbedo.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/wood_metal.png").c_str(), 0, woodMetal.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/wood_normals.png").c_str(), 0, woodNormals.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/wood_roughness.png").c_str(), 0, woodRoughness.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/snow.png").c_str(), 0, snowSRV.GetAddressOf());
+
+	//make sky
+	sky = std::make_shared<Sky>(cube, sampler, device, context, skyPixelShader, skyVertexShader,
+		FixPath(L"../../Assets/Textures/right.png").c_str(),
+		FixPath(L"../../Assets/Textures/left.png").c_str(),
+		FixPath(L"../../Assets/Textures/up.png").c_str(),
+		FixPath(L"../../Assets/Textures/down.png").c_str(),
+		FixPath(L"../../Assets/Textures/front.png").c_str(),
+		FixPath(L"../../Assets/Textures/back.png").c_str());
+
+	//set sampler state
+	skyPixelShader->SetSamplerState("BasicSampler", sampler);
+
+	//make materials
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), pixelShader, vertexShader));	//red
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), pixelShader, vertexShader));	//green
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//blue
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), customShader, vertexShader));	//custom pixel shader
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//bronze
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//cobble
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//floor
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//paint
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//rough
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));  //scratched
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//wood
+
+	//add textures
+	materials[4]->AddTextureSRV("Albedo", bronzeAlbedo);
+	materials[4]->AddTextureSRV("NormalMap", bronzeNormals);
+	materials[4]->AddTextureSRV("RoughnessMap", bronzeRoughness);
+	materials[4]->AddTextureSRV("MetalnessMap", bronzeMetal);
+	materials[4]->AddSampler("BasicSampler", sampler);
+
+	materials[5]->AddTextureSRV("Albedo", cobbleAlbedo);
+	materials[5]->AddTextureSRV("NormalMap", cobbleNormals);
+	materials[5]->AddTextureSRV("RoughnessMap", cobbleRoughness);
+	materials[5]->AddTextureSRV("MetalnessMap", cobbleMetal);
+	materials[5]->AddSampler("BasicSampler", sampler);
+
+	materials[6]->AddTextureSRV("Albedo", floorAlbedo);
+	materials[6]->AddTextureSRV("NormalMap", floorNormals);
+	materials[6]->AddTextureSRV("RoughnessMap", floorRoughness);
+	materials[6]->AddTextureSRV("MetalnessMap", floorMetal);
+	materials[6]->AddSampler("BasicSampler", sampler);
+
+	materials[7]->AddTextureSRV("Albedo", paintAlbedo);
+	materials[7]->AddTextureSRV("NormalMap", paintNormals);
+	materials[7]->AddTextureSRV("RoughnessMap", paintRoughness);
+	materials[7]->AddTextureSRV("MetalnessMap", paintMetal);
+	materials[7]->AddSampler("BasicSampler", sampler);
+
+	materials[8]->AddTextureSRV("Albedo", roughAlbedo);
+	materials[8]->AddTextureSRV("NormalMap", roughNormals);
+	materials[8]->AddTextureSRV("RoughnessMap", roughRoughness);
+	materials[8]->AddTextureSRV("MetalnessMap", roughMetal);
+	materials[8]->AddSampler("BasicSampler", sampler);
+
+	materials[9]->AddTextureSRV("Albedo", scratchedAlbedo);
+	materials[9]->AddTextureSRV("NormalMap", scratchedNormals);
+	materials[9]->AddTextureSRV("RoughnessMap", scratchedRoughness);
+	materials[9]->AddTextureSRV("MetalnessMap", scratchedMetal);
+	materials[9]->AddSampler("BasicSampler", sampler);
+
+	materials[10]->AddTextureSRV("Albedo", woodAlbedo);
+	materials[10]->AddTextureSRV("NormalMap", woodNormals);
+	materials[10]->AddTextureSRV("RoughnessMap", woodRoughness);
+	materials[10]->AddTextureSRV("MetalnessMap", woodMetal);
+	materials[10]->AddSampler("BasicSampler", sampler);
+
+
+	//push all the entities
+	entities.push_back(std::make_shared<GameEntity>(triangle, materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(triangle, materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(square, materials[2]));
+	entities.push_back(std::make_shared<GameEntity>(square, materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(star, materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(star, materials[2]));
+	entities.push_back(std::make_shared<GameEntity>(cube, materials[4]));
+	entities.push_back(std::make_shared<GameEntity>(cylinder, materials[5]));
+	entities.push_back(std::make_shared<GameEntity>(helix, materials[6]));
+	entities.push_back(std::make_shared<GameEntity>(quad, materials[7]));
+	entities.push_back(std::make_shared<GameEntity>(doubleSidedQuad, materials[8]));
+	entities.push_back(std::make_shared<GameEntity>(torus, materials[9]));
+	entities.push_back(std::make_shared<GameEntity>(sphere, materials[10]));
+	entities.push_back(std::make_shared<GameEntity>(cube, materials[3]));
+	entities.push_back(std::make_shared<GameEntity>(cube, materials[10]));
+
+	//entity initial transforms
+	entities[6]->GetTransform().SetPosition(-9.0f, 0.0f, 0.0f);
+	entities[7]->GetTransform().SetPosition(-6.0f, 0.0f, 0.0f);
+	entities[8]->GetTransform().SetPosition(-3.0f, 0.0f, 0.0f);
+	entities[9]->GetTransform().SetPosition(0.0f, 0.0f, 0.0f);
+	entities[9]->GetTransform().SetRotation(-XM_PI / 2, 0.0f, 0.0f);
+	entities[10]->GetTransform().SetPosition(3.0f, 0.0f, 0.0f);
+	entities[10]->GetTransform().SetRotation(-XM_PI / 2, 0.0f, 0.0f);
+	entities[11]->GetTransform().SetPosition(6.0f, 0.0f, 0.0f);
+	entities[12]->GetTransform().SetPosition(9.0f, 0.0f, 0.0f);
+	entities[13]->GetTransform().SetPosition(0.0f, 0.0f, -20.0f);
+	entities[14]->GetTransform().SetPosition(0.0f, -5.0f, 0.0f);
+	entities[14]->GetTransform().SetScale(15.0f, 1.0f, 15.0f);
+
+	//make camera
+	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(0.0f, 1.0f, -5.0f, 7.5f, 0.02f, XM_PI / 2.0f, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(1.0f, -1.0f, -5.0f, 7.5f, 0.02f, XM_PI / 4.0f, (float)this->windowWidth / this->windowHeight, true));
+	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, false));
+
+	//set the current active camera
+	activeCamera = cameras[0];
+}
+
+void Game::CreateAndLoadLights()
+{
+	//lights
+	lights.push_back({});
+	lights.push_back({});
+	lights.push_back({});
+	lights.push_back({});
+	lights.push_back({});
+	lights.push_back({});
+	lights[0].Type = LIGHT_TYPE_DIRECTIONAL;
+	lights[0].Direction = { 0.0f, -1.0f, 1.0f };
+	lights[0].Color = { 1.0f, 1.0f, 1.0f };
+	lights[0].Intensity = 1.0f;
+	lights[1].Type = LIGHT_TYPE_DIRECTIONAL;
+	lights[1].Direction = { 0.0f, -1.0f, 0.0f };
+	lights[1].Color = { 0.0f, 1.0f, 0.0f };
+	lights[1].Intensity = 1.0f;
+	lights[2].Type = LIGHT_TYPE_DIRECTIONAL;
+	lights[2].Direction = { -1.0f, 0.0f, 0.0f };
+	lights[2].Color = { 0.0f, 0.0f, 1.0f };
+	lights[2].Intensity = 1.0f;
+	lights[3].Type = LIGHT_TYPE_POINT;
+	lights[3].Position = { -5.0f, 0.0f, -5.0f };
+	lights[3].Range = 10.0f;
+	lights[3].Color = { 0.0f, 1.0f, 1.0f };
+	lights[3].Intensity = 1.0f;
+	lights[4].Type = LIGHT_TYPE_POINT;
+	lights[4].Position = { 5.0f, 0.0f, 5.0f };
+	lights[4].Range = 10.0f;
+	lights[4].Color = { 1.0f, 0.0f, 1.0f };
+	lights[4].Intensity = 1.0f;
+	lights[5].Type = LIGHT_TYPE_DIRECTIONAL;
+	lights[5].Direction = { 1.0f, 0.0f, 0.0f };
+	lights[5].Color = { 1.0f, 0.0f, 0.0f };
+	lights[5].Intensity = 1.0f;
+}
+
+void Game::CreateShadowMapResources()
+{
+	//shadow map resolution and light projection size
+	shadowMapResolution = 2048;
+	lightProjectionSize = 22.0f;
+
+	//create the shadow map texture
+	D3D11_TEXTURE2D_DESC shadowDesc = {};
+	shadowDesc.Width = shadowMapResolution;		//should be a power of 2
+	shadowDesc.Height = shadowMapResolution;	//should be a power of 2
+	shadowDesc.ArraySize = 1;
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowDesc.CPUAccessFlags = 0;
+	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowDesc.MipLevels = 1;
+	shadowDesc.MiscFlags = 0;
+	shadowDesc.SampleDesc.Count = 1;
+	shadowDesc.SampleDesc.Quality = 0;
+	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> shadowTexture;
+	device->CreateTexture2D(&shadowDesc, 0, shadowTexture.GetAddressOf());
+
+	//create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(
+		shadowTexture.Get(),
+		&shadowDSDesc,
+		shadowDSV.GetAddressOf());
+
+	//create shadow map SRV
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	device->CreateShaderResourceView(
+		shadowTexture.Get(),
+		&srvDesc,
+		shadowSRV.GetAddressOf());
+
+	//create rasterizer
+	D3D11_RASTERIZER_DESC shadowRastDesc = {};
+	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+	shadowRastDesc.CullMode = D3D11_CULL_BACK;
+	shadowRastDesc.DepthClipEnable = true;
+	shadowRastDesc.DepthBias = 1000;			//min precision units not world units
+	shadowRastDesc.SlopeScaledDepthBias = 1.0f;	//biased of slope
+	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
+
+	//create shadow sampler
+	D3D11_SAMPLER_DESC shadowSampDesc = {};
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.BorderColor[0] = 1.0f; //only need the first component
+	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
+
+	//light camera matrices
+	XMMATRIX lightView = XMMatrixLookToLH(
+		XMVectorSet(lights[0].Direction.x, lights[0].Direction.y, lights[0].Direction.z, 0) * -20,	//position 20 units behind the origin
+		XMVectorSet(lights[0].Direction.x, lights[0].Direction.y, lights[0].Direction.z, 0),		//direction of the light
+		XMVectorSet(0, 1, 0, 0));																	//up is world vector
+	XMStoreFloat4x4(&lightViewMatrix, lightView);
+
+	XMMATRIX lightProjection = XMMatrixOrthographicLH(
+		lightProjectionSize,
+		lightProjectionSize,
+		1.0f,
+		100.0f);
+	XMStoreFloat4x4(&lightProjectionMatrix, lightProjection);
+}
+
+void Game::CreateParticleResources()
+{
+	//depth state
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, particleDepthState.GetAddressOf());
+
+	//additive blend state
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, particleBlendState.GetAddressOf());
+
+	//particle materials
+	std::shared_ptr<Material> snowParticle = std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), particlePixelShader, particleVertexShader);
+	snowParticle->AddTextureSRV("Particle", snowSRV);
+	snowParticle->AddSampler("BasicSampler", sampler);
+
+	emitters.push_back(std::make_shared<Emitter>(
+		160,								//max particles
+		30,									//particles per second
+		5.0f,								//life time
+		0.1f,								//start size
+		0.1f,								//end size
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),	//start color
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.2f),	//end color
+		XMFLOAT3(0, -1, 0),					//start velocity
+		XMFLOAT3(0.2f, 0.2f, 0.2f),			//velocity variance
+		XMFLOAT3(-10, 10, -10),				//emitter position
+		XMFLOAT3(5.0f, 1.0f, 5.0f),			//position variance
+		XMFLOAT4(-2, 2, -2, 2),				//rotation variance
+		XMFLOAT3(0, -1, 0),					//acceleration
+		device,
+		snowParticle));
+}
+
 // --------------------------------------------------------
 // Handle resizing to match the new window size.
 //  - DXCore needs to resize the back buffer
@@ -711,9 +816,12 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	//update emitters
-	for (auto& e : emitters)
+	if (!firstFrame)
 	{
-		e->Update(deltaTime);
+		for (auto& e : emitters)
+		{
+			e->Update(deltaTime);
+		}
 	}
 
 	// Example input checking: Quit if the escape key is pressed
@@ -737,11 +845,17 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	RenderShadowMaps();
+
 	//draw all of the entities
 	for (auto& entity : entities)
 	{
+		entity->GetMaterial()->GetVertexShader()->SetMatrix4x4("lightView", lightViewMatrix);
+		entity->GetMaterial()->GetVertexShader()->SetMatrix4x4("lightProjection", lightProjectionMatrix);
+
 		entity->GetMaterial()->PrepareMaterial();
 
+		//this is in here so that the UI can update the lights
 		for (auto& light : lights)
 		{
 			entity->GetMaterial()->GetPixelShader()->SetData(
@@ -749,6 +863,9 @@ void Game::Draw(float deltaTime, float totalTime)
 				&lights[0],								// The address of the data to set
 				sizeof(Light) * (int)lights.size());	// The size of the data (the whole struct!) to set
 		}
+
+		entity->GetMaterial()->GetPixelShader()->SetShaderResourceView("ShadowMap", shadowSRV);
+		entity->GetMaterial()->GetPixelShader()->SetSamplerState("ShadowSampler", shadowSampler);
 
 		entity->Draw(activeCamera, totalTime);
 	}
@@ -763,7 +880,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//draw emitters
 	for (auto& e : emitters)
 	{
-		//e->Draw(context, activeCamera);
+		e->Draw(context, activeCamera);
 	}
 
 	//reset states for next frame
@@ -773,6 +890,9 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
+
+	ID3D11ShaderResourceView* nullSRVs[128] = {};
+	context->PSSetShaderResources(0, 128, nullSRVs);
 
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME
@@ -789,4 +909,51 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Must re-bind buffers after presenting, as they become unbound
 		context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthBufferDSV.Get());
 	}
+}
+
+void Game::RenderShadowMaps()
+{
+	//reset depth values to 0
+	context->ClearDepthStencilView(shadowDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	//unbind back buffer and set the shadow map to current depth buffer
+	ID3D11RenderTargetView* nullRTV{};
+	context->OMSetRenderTargets(1, &nullRTV, shadowDSV.Get());
+
+	//enable shadow rasterizer
+	context->RSSetState(shadowRasterizer.Get());
+
+	//unbind pixel shader for shadow rendering
+	context->PSSetShader(0, 0, 0);
+
+	//change the viewport to match the shadow map resolution
+	D3D11_VIEWPORT viewport = {};
+	viewport.Width = (float)shadowMapResolution;
+	viewport.Height = (float)shadowMapResolution;
+	viewport.MaxDepth = 1.0f;
+	context->RSSetViewports(1, &viewport);
+
+	//set shadow vertex shaders
+	shadowVertexShader->SetShader();
+	shadowVertexShader->SetMatrix4x4("view", lightViewMatrix);
+	shadowVertexShader->SetMatrix4x4("projection", lightProjectionMatrix);
+	//loop and draw all entities
+	for (auto& entity : entities)
+	{
+		shadowVertexShader->SetMatrix4x4("world", entity->GetTransform().GetWorldMatrix());
+		shadowVertexShader->CopyAllBufferData();
+		// Draw the mesh directly to avoid the entity's material
+		// Note: Your code may differ significantly here!
+		entity->GetMesh()->Draw();
+	}
+
+	//reset viewport back to screen
+	viewport.Width = (float)this->windowWidth;
+	viewport.Height = (float)this->windowHeight;
+	context->RSSetViewports(1, &viewport);
+	context->OMSetRenderTargets(
+		1,
+		backBufferRTV.GetAddressOf(),
+		depthBufferDSV.Get());
+	context->RSSetState(0);
 }

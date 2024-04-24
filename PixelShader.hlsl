@@ -1,10 +1,12 @@
 #include "ShaderIncludes.hlsli"
 
-Texture2D Albedo : register(t0);
+Texture2D Albedo : register(t0);          // "t" registers for textures
 Texture2D NormalMap : register(t1);
 Texture2D RoughnessMap : register(t2);
 Texture2D MetalnessMap : register(t3);
+Texture2D ShadowMap : register(t4);
 SamplerState BasicSampler : register(s0); // "s" registers for samplers
+SamplerComparisonState ShadowSampler : register(s1);
 
 //constant buffer definition
 cbuffer ExternalData : register(b0)
@@ -33,10 +35,17 @@ float Attenuate(Light light, float3 worldPos)
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	// Just return the input color
-	// - This color (like most values passing through the rasterizer) is 
-	//   interpolated for each pixel between the corresponding vertices 
-	//   of the triangle we're rendering
+	//perform the perspective divide
+    input.shadowMapPos /= input.shadowMapPos.w;
+    //convert the normalized device coordinates to uv
+    float2 shadowUV = input.shadowMapPos.xy * 0.5f + 0.5f;
+    shadowUV.y = 1 - shadowUV.y; // Flip the Y
+    //grab the distances
+    float distToLight = input.shadowMapPos.z;
+    float shadowAmount = ShadowMap.SampleCmpLevelZero(
+        ShadowSampler,
+        shadowUV,
+        distToLight).r;
     
     //unpack normal map
     float3 unpackedNormal = NormalMap.Sample(BasicSampler, input.uv).rgb * 2 - 1;
@@ -106,6 +115,10 @@ float4 main(VertexToPixel input) : SV_TARGET
             float3 balancedDiff = DiffuseEnergyConserve(diff, F, metalness);
             
             finalColor += (balancedDiff * albedoColor + spec) * lights[i].Color * Attenuate(lights[i], input.worldPosition) * colorTint.xyz;
+        }
+        if (i == 0)
+        {
+            finalColor *= shadowAmount;
         }
     }
     

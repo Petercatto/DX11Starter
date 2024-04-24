@@ -5,7 +5,7 @@
 #define LIGHT_TYPE_POINT 1
 #define LIGHT_TYPE_SPOT 2
 #define MAX_SPECULAR_EXPONENT 256.0f
-#define MAX_LIGHTS 5
+#define MAX_LIGHTS 6
 
 // Struct representing a single vertex worth of data
 // - This should match the vertex definition in our C++ code
@@ -51,6 +51,7 @@ struct VertexToPixel
     float3 normal : NORMAL;
     float3 worldPosition : POSITION;
     float3 tangent : TANGENT; // Tangent coordinates
+    float4 shadowMapPos : SHADOW_POSITION; //shadow position
 };
 
 //vertex to pixel struct for sky
