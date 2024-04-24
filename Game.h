@@ -67,6 +67,8 @@ private:
 	std::shared_ptr<Mesh> doubleSidedQuad;
 	std::shared_ptr<Mesh> torus;
 	std::shared_ptr<Mesh> sphere;
+	//snow mesh
+	std::shared_ptr<Mesh> snowPlane;
 
 	//textures
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
@@ -108,6 +110,11 @@ private:
 
 	//particle texture
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> snowSRV;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> snowAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> snowMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> snowNormals;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> snowRoughness;
 
 	//materials
 	std::vector<std::shared_ptr<Material>> materials;

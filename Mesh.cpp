@@ -16,10 +16,10 @@ void Mesh::CreateBuffers(Vertex* vertices, int numVertices, UINT* indices, int n
 		//this variable is created on the stack since we only need it once
 		//after the buffer is created this description variable is unnecessary
 		D3D11_BUFFER_DESC vbd = {};
-		vbd.Usage = D3D11_USAGE_IMMUTABLE;				//doesn't change
+		vbd.Usage = D3D11_USAGE_DYNAMIC;				//doesn't change
 		vbd.ByteWidth = sizeof(Vertex) * numVertices;	//number of vertices
 		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;		//tells Direct3D this is a vertex buffer
-		vbd.CPUAccessFlags = 0;							//cannot access the data from C++
+		vbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;	//cannot access the data from C++
 		vbd.MiscFlags = 0;
 		vbd.StructureByteStride = 0;
 
@@ -170,9 +170,45 @@ void Mesh::CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices,
 	}
 }
 
+void Mesh::UpdateSnow()
+{
+	int numVerts = vertexCount;
+	int index = rand() % numVerts;
+	float offset = static_cast<float>(rand()) / RAND_MAX * 0.1f - 0.005f; //adjust the range
+
+	//update the selected vertex
+	vertices[index].Position.y += offset;
+
+	//update the neighboring vertices
+	const float neighborScale = 0.5f; //adjust the influence of neighbors
+	int neighborCount = 0;
+	for (int i = 0; i < numVerts; i++)
+	{
+		if (i == index)
+			continue;
+
+		DirectX::XMVECTOR diff = DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&vertices[i].Position), DirectX::XMLoadFloat3(&vertices[index].Position));
+		float distance = DirectX::XMVectorGetX(DirectX::XMVector3Length(diff));
+
+		if (distance < 1.0f) //adjust the radius of influence
+		{
+			vertices[i].Position.y += offset * neighborScale;
+			neighborCount++;
+		}
+	}
+
+	//map buffers to GPU
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+	context->Map(vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+
+	memcpy(mapped.pData, vertices, sizeof(Vertex) * numVerts);
+
+	context->Unmap(vertexBuffer.Get(), 0);
+}
+
 Mesh::Mesh(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c, 
 	Microsoft::WRL::ComPtr<ID3D11Device> d, 
-	Vertex* vertices, int numVertices, 
+	Vertex* verts, int numVertices, 
 	UINT* indices, int numIndices)
 {
 	//initialize indexCount
@@ -182,9 +218,18 @@ Mesh::Mesh(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c,
 	context = c;
 	device = d;
 
-	CalculateTangents(vertices, numVertices, indices, numIndices);
+	CalculateTangents(verts, numVertices, indices, numIndices);
 
-	CreateBuffers(vertices, numVertices, indices, numIndices);
+	CreateBuffers(verts, numVertices, indices, numIndices);
+
+	//update vertex info
+	vertexCount = numVertices;
+	vertices = new Vertex[numVertices];
+
+	for (int i = 0; i < numVertices; i++)
+	{
+		vertices[i] = verts[i];
+	}
 }
 
 Mesh::Mesh(const wchar_t* fileName, 
@@ -413,4 +458,5 @@ Mesh::Mesh(const wchar_t* fileName,
 
 Mesh::~Mesh()
 {
+	delete[] vertices;
 }

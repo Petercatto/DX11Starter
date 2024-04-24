@@ -206,6 +206,49 @@ void Game::CreateGeometry()
 	doubleSidedQuad = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/quad_double_sided.obj").c_str(), context, device);
 	torus = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/torus.obj").c_str(), context, device);
 	sphere = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/sphere.obj").c_str(), context, device);
+
+
+	//grid ground snow
+	const int gridSize = 64;
+	const float gridSpacing = 0.45f;
+
+	std::vector<Vertex> gridVerts;
+	std::vector<UINT> gridIndices;
+
+	for (int y = 0; y < gridSize; y++)
+	{
+		for (int x = 0; x < gridSize; x++)
+		{
+			float xPos = static_cast<float>(x) * gridSpacing;
+			float yPos = static_cast<float>(y) * gridSpacing;
+
+			Vertex v;
+			v.Position = XMFLOAT3(xPos, 0.0f, yPos);
+			v.Normal = XMFLOAT3(0.0f, 1.0f, 0.0f); //assuming normal points straight up
+			v.UV = XMFLOAT2(static_cast<float>(x) / (gridSize - 1), static_cast<float>(y) / (gridSize - 1));
+
+			gridVerts.push_back(v);
+
+			//skip creating triangles for the last row and column
+			if (x < gridSize - 1 && y < gridSize - 1)
+			{
+				//create two triangles for each grid cell
+				gridIndices.push_back(y * gridSize + x);               //current
+				gridIndices.push_back((y + 1) * gridSize + x);         //next row
+				gridIndices.push_back(y * gridSize + x + 1);           //next column
+
+				gridIndices.push_back(y * gridSize + x + 1);           //current
+				gridIndices.push_back((y + 1) * gridSize + x);         //next row
+				gridIndices.push_back((y + 1) * gridSize + x + 1);     //next row, next column
+			}
+		}
+	}
+
+	int numGridVerts = (int)gridVerts.size();
+	int numGridIndices = (int)gridIndices.size();
+
+	// Assuming 'grid' is a std::shared_ptr<Mesh>'
+	snowPlane = std::make_shared<Mesh>(context, device, gridVerts.data(), numGridVerts, gridIndices.data(), numGridIndices);
 }
 
 //ImGui update helper function
@@ -467,6 +510,18 @@ void Game::LoadAssetsAndCreateEntities()
 	CreateWICTextureFromFile(device.Get(), context.Get(),
 		FixPath(L"../../Assets/Textures/snow.png").c_str(), 0, snowSRV.GetAddressOf());
 
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/snow_albedo.png").c_str(), 0, snowAlbedo.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/snow_metal.png").c_str(), 0, snowMetal.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/snow_normals.png").c_str(), 0, snowNormals.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(),
+		FixPath(L"../../Assets/Textures/snow_roughness.png").c_str(), 0, snowRoughness.GetAddressOf());
+
 	//make sky
 	sky = std::make_shared<Sky>(cube, sampler, device, context, skyPixelShader, skyVertexShader,
 		FixPath(L"../../Assets/Textures/right.png").c_str(),
@@ -491,6 +546,7 @@ void Game::LoadAssetsAndCreateEntities()
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//rough
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));  //scratched
 	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//wood
+	materials.push_back(std::make_shared<Material>(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), pixelShader, vertexShader));	//snow
 
 	//add textures
 	materials[4]->AddTextureSRV("Albedo", bronzeAlbedo);
@@ -535,6 +591,12 @@ void Game::LoadAssetsAndCreateEntities()
 	materials[10]->AddTextureSRV("MetalnessMap", woodMetal);
 	materials[10]->AddSampler("BasicSampler", sampler);
 
+	materials[11]->AddTextureSRV("Albedo", snowAlbedo);
+	materials[11]->AddTextureSRV("NormalMap", snowNormals);
+	materials[11]->AddTextureSRV("RoughnessMap", snowRoughness);
+	materials[11]->AddTextureSRV("MetalnessMap", snowMetal);
+	materials[11]->AddSampler("BasicSampler", sampler);
+
 
 	//push all the entities
 	entities.push_back(std::make_shared<GameEntity>(triangle, materials[0]));
@@ -552,6 +614,7 @@ void Game::LoadAssetsAndCreateEntities()
 	entities.push_back(std::make_shared<GameEntity>(sphere, materials[10]));
 	entities.push_back(std::make_shared<GameEntity>(cube, materials[3]));
 	entities.push_back(std::make_shared<GameEntity>(cube, materials[10]));
+	entities.push_back(std::make_shared<GameEntity>(snowPlane, materials[11]));
 
 	//entity initial transforms
 	entities[6]->GetTransform().SetPosition(-9.0f, 0.0f, 0.0f);
@@ -566,6 +629,7 @@ void Game::LoadAssetsAndCreateEntities()
 	entities[13]->GetTransform().SetPosition(0.0f, 0.0f, -20.0f);
 	entities[14]->GetTransform().SetPosition(0.0f, -5.0f, 0.0f);
 	entities[14]->GetTransform().SetScale(15.0f, 1.0f, 15.0f);
+	entities[15]->GetTransform().SetPosition(-45.0f, -3.9f, -15.0f);
 
 	//make camera
 	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, true));
@@ -592,8 +656,8 @@ void Game::CreateAndLoadLights()
 	lights[0].Intensity = 1.0f;
 	lights[1].Type = LIGHT_TYPE_DIRECTIONAL;
 	lights[1].Direction = { 0.0f, -1.0f, 0.0f };
-	lights[1].Color = { 0.0f, 1.0f, 0.0f };
-	lights[1].Intensity = 1.0f;
+	lights[1].Color = { 1.0f, 1.0f, 1.0f };
+	lights[1].Intensity = 0.1f;
 	lights[2].Type = LIGHT_TYPE_DIRECTIONAL;
 	lights[2].Direction = { -1.0f, 0.0f, 0.0f };
 	lights[2].Color = { 0.0f, 0.0f, 1.0f };
@@ -720,8 +784,8 @@ void Game::CreateParticleResources()
 	snowParticle->AddSampler("BasicSampler", sampler);
 
 	emitters.push_back(std::make_shared<Emitter>(
-		160,								//max particles
-		30,									//particles per second
+		1280,								//max particles
+		240,								//particles per second
 		5.0f,								//life time
 		0.1f,								//start size
 		0.1f,								//end size
@@ -729,8 +793,8 @@ void Game::CreateParticleResources()
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.2f),	//end color
 		XMFLOAT3(0, -1, 0),					//start velocity
 		XMFLOAT3(0.2f, 0.2f, 0.2f),			//velocity variance
-		XMFLOAT3(-10, 10, -10),				//emitter position
-		XMFLOAT3(5.0f, 1.0f, 5.0f),			//position variance
+		XMFLOAT3(-30.0, 10.0, 0.0),			//emitter position
+		XMFLOAT3(15.0f, 1.0f, 15.0f),		//position variance
 		XMFLOAT4(-2, 2, -2, 2),				//rotation variance
 		XMFLOAT3(0, -1, 0),					//acceleration
 		device,
@@ -803,6 +867,9 @@ void Game::Update(float deltaTime, float totalTime)
 
 	auto& cube2 = entities[13]->GetTransform();
 	cube2.Rotate(deltaTime, 0.0f, deltaTime);
+
+	auto& snow = entities[15];
+	snow->GetMesh()->UpdateSnow();
 
 	//camera update
 	activeCamera->Update(deltaTime);
