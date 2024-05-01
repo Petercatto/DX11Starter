@@ -1040,7 +1040,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	context->ClearRenderTargetView(chromaticRTV.Get(), clearColor);
 	context->ClearRenderTargetView(blurRTV.Get(), clearColor);
-	context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), depthBufferDSV.Get()); //change back to chromatic
+	context->OMSetRenderTargets(1, chromaticRTV.GetAddressOf(), depthBufferDSV.Get()); //change back to chromatic
 
 	//draw all of the entities
 	for (auto& entity : entities)
@@ -1084,18 +1084,18 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->RSSetState(0);
 
 	//post process post rendering - activate shaders and bind resources, set cbuffer data
-	//context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), depthBufferDSV.Get());
+	context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), depthBufferDSV.Get());
 
 	ppVertexShader->SetShader();
 
-	//chromaticPixelShader->SetShader();
-	//chromaticPixelShader->SetShaderResourceView("Pixels", chromaticSRV.Get()); // No input needed for chromatic aberration
-	//chromaticPixelShader->SetSamplerState("ClampSampler", ppSampler.Get());
-	//chromaticPixelShader->SetFloat3("colorOffset", colorOffset);
-	//chromaticPixelShader->SetFloat2("screenCenter", DirectX::XMFLOAT2(windowWidth / 2.0f, windowHeight / 2.0f));
-	//chromaticPixelShader->CopyAllBufferData();
+	chromaticPixelShader->SetShader();
+	chromaticPixelShader->SetShaderResourceView("Pixels", chromaticSRV.Get()); // No input needed for chromatic aberration
+	chromaticPixelShader->SetSamplerState("ClampSampler", ppSampler.Get());
+	chromaticPixelShader->SetFloat3("colorOffset", colorOffset);
+	chromaticPixelShader->SetFloat2("screenCenter", DirectX::XMFLOAT2(windowWidth / 2.0f, windowHeight / 2.0f));
+	chromaticPixelShader->CopyAllBufferData();
 
-	//context->Draw(3, 0); //fullscreen triangle
+	context->Draw(3, 0); //fullscreen triangle
 
 	//switch back to the back buffer before applying the blur effect
 	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthBufferDSV.Get());
