@@ -21,6 +21,7 @@ public:
 	DirectX::XMFLOAT3 GetPitchYawRoll(); //XMFLOAT4 GetRotation() for quaternion
 	DirectX::XMFLOAT3 GetScale();
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
+	DirectX::XMMATRIX GetRawWorldMatrix();
 	DirectX::XMFLOAT4X4 GetWorldInverseTransposeMatrix();
 	DirectX::XMFLOAT3 GetRight();
 	DirectX::XMFLOAT3 GetUp();

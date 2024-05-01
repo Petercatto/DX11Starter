@@ -236,13 +236,13 @@ void Game::CreateGeometry()
 	{
 		for (int x = 0; x < gridSize; x++)
 		{
-			float xPos = static_cast<float>(x) * gridSpacing;
-			float yPos = static_cast<float>(y) * gridSpacing;
+			float xPos = (float)x * gridSpacing;
+			float yPos = (float)y * gridSpacing;
 
 			Vertex v;
 			v.Position = XMFLOAT3(xPos, 0.0f, yPos);
 			v.Normal = XMFLOAT3(0.0f, 1.0f, 0.0f); //assuming normal points straight up
-			v.UV = XMFLOAT2(static_cast<float>(x) / (gridSize - 1), static_cast<float>(y) / (gridSize - 1));
+			v.UV = XMFLOAT2((float)x / (gridSize - 1), (float)y / (gridSize - 1));
 
 			gridVerts.push_back(v);
 
@@ -296,8 +296,6 @@ void Game::BuildUI(DirectX::XMFLOAT4X4& world)
 
 	//shows the current frame rate
 	ImGui::Text("Framerate: %f fps", ImGui::GetIO().Framerate);
-
-	ImGui::Image(blurSRV.Get(), ImVec2(512, 512));
 
 	//shows the current window size
 	ImGui::Text("Window Resolution: %dx%d", windowWidth, windowHeight);
@@ -659,7 +657,7 @@ void Game::LoadAssetsAndCreateEntities()
 	entities[14]->GetTransform().SetPosition(0.0f, -5.0f, 0.0f);
 	entities[14]->GetTransform().SetScale(15.0f, 1.0f, 15.0f);
 	entities[15]->GetTransform().SetPosition(-45.0f, -3.9f, -15.0f);
-	entities[16]->GetTransform().SetPosition(-45.0f, -2.9f, -15.0f);
+	entities[16]->GetTransform().SetPosition(-30.0f, -2.9f, -10.0f);
 	entities[16]->GetTransform().SetRotation(XM_PI / 2, 0.0f, 0.0f);
 
 	//make camera
@@ -842,57 +840,39 @@ void Game::CreatePostProcessResources()
 	chromaticSRV.Reset();
 
 	//texture description
-	D3D11_TEXTURE2D_DESC textureDesc1 = {};
-	textureDesc1.Width = windowWidth;
-	textureDesc1.Height = windowHeight;
-	textureDesc1.ArraySize = 1;
-	textureDesc1.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc1.CPUAccessFlags = 0;
-	textureDesc1.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	textureDesc1.MipLevels = 1;
-	textureDesc1.MiscFlags = 0;
-	textureDesc1.SampleDesc.Count = 1;
-	textureDesc1.SampleDesc.Quality = 0;
-	textureDesc1.Usage = D3D11_USAGE_DEFAULT;
-
-	D3D11_TEXTURE2D_DESC textureDesc2 = {};
-	textureDesc2.Width = windowWidth;
-	textureDesc2.Height = windowHeight;
-	textureDesc2.ArraySize = 1;
-	textureDesc2.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc2.CPUAccessFlags = 0;
-	textureDesc2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	textureDesc2.MipLevels = 1;
-	textureDesc2.MiscFlags = 0;
-	textureDesc2.SampleDesc.Count = 1;
-	textureDesc2.SampleDesc.Quality = 0;
-	textureDesc2.Usage = D3D11_USAGE_DEFAULT;
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = windowWidth;
+	textureDesc.Height = windowHeight;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
 
 	//create texture resource
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppTexture1;
-	device->CreateTexture2D(&textureDesc1, 0, ppTexture1.GetAddressOf());
+	device->CreateTexture2D(&textureDesc, 0, ppTexture1.GetAddressOf());
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppTexture2;
-	device->CreateTexture2D(&textureDesc2, 0, ppTexture2.GetAddressOf());
+	device->CreateTexture2D(&textureDesc, 0, ppTexture2.GetAddressOf());
 
 	//create the Render Target View
-	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc1 = {};
-	rtvDesc1.Format = textureDesc1.Format;
-	rtvDesc1.Texture2D.MipSlice = 0;
-	rtvDesc1.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-
-	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc2 = {};
-	rtvDesc2.Format = textureDesc2.Format;
-	rtvDesc2.Texture2D.MipSlice = 0;
-	rtvDesc2.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 
 	device->CreateRenderTargetView(
 		ppTexture1.Get(),
-		&rtvDesc1,
+		&rtvDesc,
 		chromaticRTV.ReleaseAndGetAddressOf());
 
 	device->CreateRenderTargetView(
 		ppTexture2.Get(),
-		&rtvDesc2,
+		&rtvDesc,
 		blurRTV.ReleaseAndGetAddressOf());
 
 	//create the Shader Resource View
@@ -947,7 +927,7 @@ void Game::Update(float deltaTime, float totalTime)
 	float z = 0.05f * std::sin(angle);  //calculate z position
 	float dirX = -0.05f * std::sin(angle);
 	float dirZ = 0.05f * std::cos(angle);
-	float rotationAngle = std::atan2(dirX, dirZ);
+	float rotationAngle = std::atan2(dirX, dirZ) - DirectX::XM_PIDIV2;
 
 	//entity movement
 	auto& triangle1 = entities[0]->GetTransform();
@@ -987,11 +967,11 @@ void Game::Update(float deltaTime, float totalTime)
 	auto& snowBall = entities[16]->GetTransform();
 	snowBall.MoveAbsolute(x, 0.0f, z);
 	snowBall.SetRotation(snowBall.GetPitchYawRoll().x, rotationAngle, snowBall.GetPitchYawRoll().z);
-	snowBall.Rotate(0.05f, 0.0f, 0.0f);
+	snowBall.Rotate(-0.05f, 0.0f, 0.0f);
 	angle += steadySpeed;
 
 	auto& snow = entities[15];
-	snow->GetMesh()->UpdateSnow(snowBall.GetPosition().x, snowBall.GetPosition().z, 2.0f);
+	snow->GetMesh()->UpdateSnow(entities[15]->GetTransform(), snowBall.GetPosition().x, snowBall.GetPosition().z, 1.0f);
 
 	//camera update
 	activeCamera->Update(deltaTime);
@@ -1040,7 +1020,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	context->ClearRenderTargetView(chromaticRTV.Get(), clearColor);
 	context->ClearRenderTargetView(blurRTV.Get(), clearColor);
-	context->OMSetRenderTargets(1, chromaticRTV.GetAddressOf(), depthBufferDSV.Get()); //change back to chromatic
+	context->OMSetRenderTargets(1, chromaticRTV.GetAddressOf(), depthBufferDSV.Get());
 
 	//draw all of the entities
 	for (auto& entity : entities)
@@ -1089,7 +1069,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	ppVertexShader->SetShader();
 
 	chromaticPixelShader->SetShader();
-	chromaticPixelShader->SetShaderResourceView("Pixels", chromaticSRV.Get()); // No input needed for chromatic aberration
+	chromaticPixelShader->SetShaderResourceView("Pixels", chromaticSRV.Get());
 	chromaticPixelShader->SetSamplerState("ClampSampler", ppSampler.Get());
 	chromaticPixelShader->SetFloat3("colorOffset", colorOffset);
 	chromaticPixelShader->SetFloat2("screenCenter", DirectX::XMFLOAT2(windowWidth / 2.0f, windowHeight / 2.0f));
@@ -1101,7 +1081,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), 0);
 
 	blurPixelShader->SetShader();
-	blurPixelShader->SetShaderResourceView("Pixels", blurSRV.Get()); // Use the output of chromaticPixelShader as input
+	blurPixelShader->SetShaderResourceView("Pixels", blurSRV.Get()); 
 	blurPixelShader->SetSamplerState("ClampSampler", ppSampler.Get());
 	blurPixelShader->SetInt("blurRadius", blurRadius);
 	blurPixelShader->SetFloat("pixelWidth", 1.0f / windowWidth);

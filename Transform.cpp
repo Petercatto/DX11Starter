@@ -96,6 +96,19 @@ DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 	return world;
 }
 
+DirectX::XMMATRIX Transform::GetRawWorldMatrix()
+{
+	//create the three matrices that make up the world matrix
+	XMMATRIX s = XMMatrixScalingFromVector(XMLoadFloat3(&scale));
+	XMMATRIX r = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotation));
+	XMMATRIX t = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
+
+	//combine into a single world matrix
+	XMMATRIX worldMat = s * r * t;
+
+	return worldMat;
+}
+
 DirectX::XMFLOAT4X4 Transform::GetWorldInverseTransposeMatrix()
 {
 	if (worldMatrixUpdated) updateWorldMatrix();
