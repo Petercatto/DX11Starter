@@ -31,7 +31,7 @@ public:
 	int GetIndexCount();
 	void Draw();
 	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
-	void UpdateSnow();
+	void UpdateSnow(float sphereX, float sphereZ, float sphereRadius);
 
 	//constructor (takes in device context, device, vertices, vertex count, indices, & indice count)
 	Mesh(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c, 

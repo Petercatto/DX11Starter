@@ -170,7 +170,7 @@ void Mesh::CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices,
 	}
 }
 
-void Mesh::UpdateSnow()
+void Mesh::UpdateSnow(float sphereX, float sphereZ, float sphereRadius)
 {
 	int numVerts = vertexCount;
 	int index = rand() % numVerts;
@@ -178,6 +178,19 @@ void Mesh::UpdateSnow()
 
 	//update the selected vertex
 	vertices[index].Position.y += offset;
+
+	//check if the selected vertex is within the sphere's radius
+	DirectX::XMVECTOR spherePos = DirectX::XMVectorSet(sphereX, 0.0f, sphereZ, 0.0f);
+	for (int i = 0; i < numVerts; i++)
+	{
+		DirectX::XMVECTOR vertexPos = DirectX::XMLoadFloat3(&vertices[i].Position);
+		float distance = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSubtract(vertexPos, spherePos)));
+		if (distance < sphereRadius)
+		{
+			//reset the position of the vertex to 0
+			vertices[i].Position.y = 0.0f;
+		}
+	}
 
 	//update the neighboring vertices
 	const float neighborScale = 0.5f; //adjust the influence of neighbors

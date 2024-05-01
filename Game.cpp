@@ -87,6 +87,16 @@ void Game::Init()
 
 	//create the particle resources
 	CreateParticleResources();
+
+	//sampler state for post processing
+	D3D11_SAMPLER_DESC ppSampDesc = {};
+	ppSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	ppSampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	device->CreateSamplerState(&ppSampDesc, ppSampler.GetAddressOf());
+	CreatePostProcessResources();
 }
 
 // --------------------------------------------------------
@@ -114,6 +124,13 @@ void Game::LoadShaders()
 
 	shadowVertexShader = std::make_shared<SimpleVertexShader>(device, context,
 		FixPath(L"ShadowVertexShader.cso").c_str());
+
+	ppVertexShader = std::make_shared<SimpleVertexShader>(device, context,
+		FixPath(L"ppVertexShader.cso").c_str());
+	blurPixelShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"blurPixelShader.cso").c_str());
+	chromaticPixelShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"chromaticPixelShader.cso").c_str());
 
 	particleVertexShader = std::make_shared<SimpleVertexShader>(device, context,
 		FixPath(L"particleVertexShader.cso").c_str());
@@ -280,6 +297,8 @@ void Game::BuildUI(DirectX::XMFLOAT4X4& world)
 	//shows the current frame rate
 	ImGui::Text("Framerate: %f fps", ImGui::GetIO().Framerate);
 
+	ImGui::Image(blurSRV.Get(), ImVec2(512, 512));
+
 	//shows the current window size
 	ImGui::Text("Window Resolution: %dx%d", windowWidth, windowHeight);
 	
@@ -306,31 +325,36 @@ void Game::BuildUI(DirectX::XMFLOAT4X4& world)
 
 	//check box example
 	ImGui::Checkbox("Show/Hide", &ImGuiDemoVisable);
-	
-	//camera changer
-	for (int i = 0; i < cameras.size(); i++)
-	{
-		if (ImGui::RadioButton(("Camera " + std::to_string(i + 1)).c_str(), &selectedCamera, i))
-		{
-			activeCamera = cameras[selectedCamera];
-		}
-		if (i != cameras.size() - 1)
-		{
-			ImGui::SameLine();
-		}
-	}
 
 	//info for the current camera
-	ImGui::Text("Active Camera:");
-	ImGui::Text("Position: %.2f, %.2f, %.2f", activeCamera->GetTransform().GetPosition().x, activeCamera->GetTransform().GetPosition().y, activeCamera->GetTransform().GetPosition().z);
-	ImGui::Text("Field of View: %.2f degrees", DirectX::XMConvertToDegrees(activeCamera->GetFOV()));
-	if (activeCamera->GetType())
+	if (ImGui::TreeNode("Cameras"))
 	{
-		ImGui::Text("Projection: Perspective");
-	}
-	else
-	{
-		ImGui::Text("Projection: Orthographic");
+		//camera changer
+		for (int i = 0; i < cameras.size(); i++)
+		{
+			if (ImGui::RadioButton(("Camera " + std::to_string(i + 1)).c_str(), &selectedCamera, i))
+			{
+				activeCamera = cameras[selectedCamera];
+			}
+			if (i != cameras.size() - 1)
+			{
+				ImGui::SameLine();
+			}
+		}
+
+		ImGui::Text("Active Camera:");
+		ImGui::Text("Position: %.2f, %.2f, %.2f", activeCamera->GetTransform().GetPosition().x, activeCamera->GetTransform().GetPosition().y, activeCamera->GetTransform().GetPosition().z);
+		ImGui::Text("Field of View: %.2f degrees", DirectX::XMConvertToDegrees(activeCamera->GetFOV()));
+		if (activeCamera->GetType())
+		{
+			ImGui::Text("Projection: Perspective");
+		}
+		else
+		{
+			ImGui::Text("Projection: Orthographic");
+		}
+		//close the entire list
+		ImGui::TreePop();
 	}
 
 	//entity list
@@ -404,6 +428,10 @@ void Game::BuildUI(DirectX::XMFLOAT4X4& world)
 		//close the entire list
 		ImGui::TreePop();
 	}
+
+	//post processing
+	ImGui::SliderInt("Blur Radius", &blurRadius, 0, 10);
+	ImGui::SliderFloat3("Chromatic Aberration", &colorOffset.x, -5.0f, 5.0f);
 
 	//ending of the window
 	ImGui::End();
@@ -615,6 +643,7 @@ void Game::LoadAssetsAndCreateEntities()
 	entities.push_back(std::make_shared<GameEntity>(cube, materials[3]));
 	entities.push_back(std::make_shared<GameEntity>(cube, materials[10]));
 	entities.push_back(std::make_shared<GameEntity>(snowPlane, materials[11]));
+	entities.push_back(std::make_shared<GameEntity>(sphere, materials[11]));
 
 	//entity initial transforms
 	entities[6]->GetTransform().SetPosition(-9.0f, 0.0f, 0.0f);
@@ -630,6 +659,8 @@ void Game::LoadAssetsAndCreateEntities()
 	entities[14]->GetTransform().SetPosition(0.0f, -5.0f, 0.0f);
 	entities[14]->GetTransform().SetScale(15.0f, 1.0f, 15.0f);
 	entities[15]->GetTransform().SetPosition(-45.0f, -3.9f, -15.0f);
+	entities[16]->GetTransform().SetPosition(-30.0f, -2.9f, -10.0f);
+	entities[16]->GetTransform().SetRotation(XM_PI / 2, 0.0f, 0.0f);
 
 	//make camera
 	cameras.push_back(std::make_shared<Camera>(0.0f, 0.0f, -10.0f, 7.5f, 0.02f, XM_PI / 3.0f, (float)this->windowWidth / this->windowHeight, true));
@@ -801,6 +832,82 @@ void Game::CreateParticleResources()
 		snowParticle));
 }
 
+void Game::CreatePostProcessResources()
+{
+	//reset if they exist already
+	blurRTV.Reset();
+	blurSRV.Reset();
+
+	chromaticRTV.Reset();
+	chromaticSRV.Reset();
+
+	//texture description
+	D3D11_TEXTURE2D_DESC textureDesc1 = {};
+	textureDesc1.Width = windowWidth;
+	textureDesc1.Height = windowHeight;
+	textureDesc1.ArraySize = 1;
+	textureDesc1.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc1.CPUAccessFlags = 0;
+	textureDesc1.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc1.MipLevels = 1;
+	textureDesc1.MiscFlags = 0;
+	textureDesc1.SampleDesc.Count = 1;
+	textureDesc1.SampleDesc.Quality = 0;
+	textureDesc1.Usage = D3D11_USAGE_DEFAULT;
+
+	D3D11_TEXTURE2D_DESC textureDesc2 = {};
+	textureDesc2.Width = windowWidth;
+	textureDesc2.Height = windowHeight;
+	textureDesc2.ArraySize = 1;
+	textureDesc2.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc2.CPUAccessFlags = 0;
+	textureDesc2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc2.MipLevels = 1;
+	textureDesc2.MiscFlags = 0;
+	textureDesc2.SampleDesc.Count = 1;
+	textureDesc2.SampleDesc.Quality = 0;
+	textureDesc2.Usage = D3D11_USAGE_DEFAULT;
+
+	//create texture resource
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppTexture1;
+	device->CreateTexture2D(&textureDesc1, 0, ppTexture1.GetAddressOf());
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppTexture2;
+	device->CreateTexture2D(&textureDesc2, 0, ppTexture2.GetAddressOf());
+
+	//create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc1 = {};
+	rtvDesc1.Format = textureDesc1.Format;
+	rtvDesc1.Texture2D.MipSlice = 0;
+	rtvDesc1.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc2 = {};
+	rtvDesc2.Format = textureDesc2.Format;
+	rtvDesc2.Texture2D.MipSlice = 0;
+	rtvDesc2.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(
+		ppTexture1.Get(),
+		&rtvDesc1,
+		chromaticRTV.ReleaseAndGetAddressOf());
+
+	device->CreateRenderTargetView(
+		ppTexture2.Get(),
+		&rtvDesc2,
+		blurRTV.ReleaseAndGetAddressOf());
+
+	//create the Shader Resource View
+	//null description gives it the entire resource
+	device->CreateShaderResourceView(
+		ppTexture1.Get(),
+		0,
+		chromaticSRV.ReleaseAndGetAddressOf());
+
+	device->CreateShaderResourceView(
+		ppTexture2.Get(),
+		0,
+		blurSRV.ReleaseAndGetAddressOf());
+}
+
 // --------------------------------------------------------
 // Handle resizing to match the new window size.
 //  - DXCore needs to resize the back buffer
@@ -816,6 +923,8 @@ void Game::OnResize()
 	{
 		cameras[i]->UpdateProjectionMatrix((float)this->windowWidth / this->windowHeight);
 	}
+
+	CreatePostProcessResources();
 }
 
 // --------------------------------------------------------
@@ -829,9 +938,16 @@ void Game::Update(float deltaTime, float totalTime)
 
 	//movement variables
 	float speed = 2.0f;
+	float steadySpeed = 0.005f;
 	float magnitude = 0.5f;
 	float offset = static_cast<float>(sin(totalTime * speed) * magnitude);
 	float scaleOffset = static_cast<float>(sin(totalTime * speed) * magnitude + 0.7f);
+	static float angle = 0.0f;  //initial angle
+	float x = 0.05f * std::cos(angle);  //calculate x position
+	float z = 0.05f * std::sin(angle);  //calculate z position
+	float dirX = -0.05f * std::sin(angle);
+	float dirZ = 0.05f * std::cos(angle);
+	float rotationAngle = std::atan2(dirX, dirZ);
 
 	//entity movement
 	auto& triangle1 = entities[0]->GetTransform();
@@ -868,8 +984,14 @@ void Game::Update(float deltaTime, float totalTime)
 	auto& cube2 = entities[13]->GetTransform();
 	cube2.Rotate(deltaTime, 0.0f, deltaTime);
 
+	auto& snowBall = entities[16]->GetTransform();
+	snowBall.MoveAbsolute(x, 0.0f, z);
+	snowBall.SetRotation(snowBall.GetPitchYawRoll().x, rotationAngle, snowBall.GetPitchYawRoll().z);
+	snowBall.Rotate(0.05f, 0.0f, 0.0f);
+	angle += steadySpeed;
+
 	auto& snow = entities[15];
-	snow->GetMesh()->UpdateSnow();
+	snow->GetMesh()->UpdateSnow(snowBall.GetPosition().x / 15.0f  + 17.0f, snowBall.GetPosition().z / 15.0f + 15.0, 10.0f);
 
 	//camera update
 	activeCamera->Update(deltaTime);
@@ -914,6 +1036,12 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	RenderShadowMaps();
 
+	//post process pre-rendering
+	const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	context->ClearRenderTargetView(chromaticRTV.Get(), clearColor);
+	context->ClearRenderTargetView(blurRTV.Get(), clearColor);
+	context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), depthBufferDSV.Get()); //change back to chromatic
+
 	//draw all of the entities
 	for (auto& entity : entities)
 	{
@@ -949,11 +1077,38 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		e->Draw(context, activeCamera);
 	}
-
-	//reset states for next frame
+	
+	//reset states for next frame for particles
 	context->OMSetBlendState(0, 0, 0xffffffff);
 	context->OMSetDepthStencilState(0, 0);
 	context->RSSetState(0);
+
+	//post process post rendering - activate shaders and bind resources, set cbuffer data
+	//context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), depthBufferDSV.Get());
+
+	ppVertexShader->SetShader();
+
+	//chromaticPixelShader->SetShader();
+	//chromaticPixelShader->SetShaderResourceView("Pixels", chromaticSRV.Get()); // No input needed for chromatic aberration
+	//chromaticPixelShader->SetSamplerState("ClampSampler", ppSampler.Get());
+	//chromaticPixelShader->SetFloat3("colorOffset", colorOffset);
+	//chromaticPixelShader->SetFloat2("screenCenter", DirectX::XMFLOAT2(windowWidth / 2.0f, windowHeight / 2.0f));
+	//chromaticPixelShader->CopyAllBufferData();
+
+	//context->Draw(3, 0); //fullscreen triangle
+
+	//switch back to the back buffer before applying the blur effect
+	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthBufferDSV.Get());
+
+	blurPixelShader->SetShader();
+	blurPixelShader->SetShaderResourceView("Pixels", blurSRV.Get()); // Use the output of chromaticPixelShader as input
+	blurPixelShader->SetSamplerState("ClampSampler", ppSampler.Get());
+	blurPixelShader->SetInt("blurRadius", blurRadius);
+	blurPixelShader->SetFloat("pixelWidth", 1.0f / windowWidth);
+	blurPixelShader->SetFloat("pixelHeight", 1.0f / windowHeight);
+	blurPixelShader->CopyAllBufferData();
+
+	context->Draw(3, 0); //fullscreen triangle
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen

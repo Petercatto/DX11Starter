@@ -42,6 +42,7 @@ private:
 	void CreateShadowMapResources();
 	void RenderShadowMaps();
 	void CreateParticleResources();
+	void CreatePostProcessResources();
 
 	//make bgColor a global variable so it can be accessed by the UI
 	float bgColor[4] = { 0.4f, 0.6f, 0.75f, 1.0f };
@@ -165,6 +166,22 @@ private:
 	DirectX::XMFLOAT4X4 lightViewMatrix;
 	DirectX::XMFLOAT4X4 lightProjectionMatrix;
 	std::shared_ptr<SimpleVertexShader> shadowVertexShader;
+
+	//overall resources for all post processes
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> ppSampler;
+	std::shared_ptr<SimpleVertexShader> ppVertexShader;
+
+	//blur post process resources
+	std::shared_ptr<SimplePixelShader> blurPixelShader;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> blurRTV; //for rendering
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> blurSRV; //for sampling
+	int blurRadius = 0;
+
+	//chromatic aberration post process resources
+	std::shared_ptr<SimplePixelShader> chromaticPixelShader;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> chromaticRTV; //for rendering
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> chromaticSRV; //for sampling
+	DirectX::XMFLOAT3 colorOffset;
 
 	//particle shader data
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
