@@ -659,7 +659,7 @@ void Game::LoadAssetsAndCreateEntities()
 	entities[14]->GetTransform().SetPosition(0.0f, -5.0f, 0.0f);
 	entities[14]->GetTransform().SetScale(15.0f, 1.0f, 15.0f);
 	entities[15]->GetTransform().SetPosition(-45.0f, -3.9f, -15.0f);
-	entities[16]->GetTransform().SetPosition(-30.0f, -2.9f, -10.0f);
+	entities[16]->GetTransform().SetPosition(-45.0f, -2.9f, -15.0f);
 	entities[16]->GetTransform().SetRotation(XM_PI / 2, 0.0f, 0.0f);
 
 	//make camera
@@ -991,7 +991,7 @@ void Game::Update(float deltaTime, float totalTime)
 	angle += steadySpeed;
 
 	auto& snow = entities[15];
-	snow->GetMesh()->UpdateSnow(snowBall.GetPosition().x / 15.0f  + 17.0f, snowBall.GetPosition().z / 15.0f + 15.0, 10.0f);
+	snow->GetMesh()->UpdateSnow(snowBall.GetPosition().x, snowBall.GetPosition().z, 2.0f);
 
 	//camera update
 	activeCamera->Update(deltaTime);
@@ -1098,7 +1098,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->Draw(3, 0); //fullscreen triangle
 
 	//switch back to the back buffer before applying the blur effect
-	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthBufferDSV.Get());
+	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), 0);
 
 	blurPixelShader->SetShader();
 	blurPixelShader->SetShaderResourceView("Pixels", blurSRV.Get()); // Use the output of chromaticPixelShader as input

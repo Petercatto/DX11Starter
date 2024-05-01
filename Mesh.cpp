@@ -174,7 +174,7 @@ void Mesh::UpdateSnow(float sphereX, float sphereZ, float sphereRadius)
 {
 	int numVerts = vertexCount;
 	int index = rand() % numVerts;
-	float offset = static_cast<float>(rand()) / RAND_MAX * 0.1f - 0.005f; //adjust the range
+	float offset = static_cast<float>(rand()) / RAND_MAX * 1.1f - 0.005f; //adjust the range
 
 	//update the selected vertex
 	vertices[index].Position.y += offset;
@@ -183,7 +183,7 @@ void Mesh::UpdateSnow(float sphereX, float sphereZ, float sphereRadius)
 	DirectX::XMVECTOR spherePos = DirectX::XMVectorSet(sphereX, 0.0f, sphereZ, 0.0f);
 	for (int i = 0; i < numVerts; i++)
 	{
-		DirectX::XMVECTOR vertexPos = DirectX::XMLoadFloat3(&vertices[i].Position);
+		DirectX::XMVECTOR vertexPos = DirectX::XMLoadFloat3(&vertices[i].Position) * XMVectorSet(1, 0, 1, 1);
 		float distance = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSubtract(vertexPos, spherePos)));
 		if (distance < sphereRadius)
 		{
